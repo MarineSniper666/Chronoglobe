@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Sparkles, MapPin, Volume2, Pause, Loader2 } from 'lucide-react';
+import { X, Sparkles, MapPin, Volume2, Pause, Loader2, Users, GitBranch } from 'lucide-react';
 import { CATEGORIES, formatYear } from '../lib/history';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-export default function SidePanel({ event, onClose }) {
+export default function SidePanel({ event, allEvents = [], onClose, onOpenRelated }) {
   const [aiText, setAiText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [voice, setVoice] = useState('onyx'); // 'onyx' = male, 'sage' = female
   const abortRef = useRef(null);
   const audioRef = useRef(null);
 
@@ -71,6 +72,56 @@ export default function SidePanel({ event, onClose }) {
     return () => controller.abort();
   }, [event]);
 
+  const handleListen = async () => {
+    if (!aiText || loading) return;
+    if (audioRef.current) {
+      if (audioPlaying) { audioRef.current.pause(); setAudioPlaying(false); }
+      else { audioRef.current.play(); setAudioPlaying(true); }
+      return;
+    }
+    setAudioLoading(true);
+    try {
+      const cleanText = aiText.replace(/\*\*/g, '').replace(/[#*_`]/g, '');
+      const res = await fetch(`${API}/tts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: cleanText, voice }),
+      });
+      if (!res.ok) throw new Error(`TTS HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+      const audio = new Audio(url);
+      audio.onended = () => setAudioPlaying(false);
+      audioRef.current = audio;
+      audio.play();
+      setAudioPlaying(true);
+    } catch (e) {
+      setError(`Audio: ${e.message}`);
+    } finally {
+      setAudioLoading(false);
+    }
+  };
+
+  const changeVoice = (v) => {
+    if (v === voice) return;
+    // Invalidate cached audio so next Listen re-fetches in new voice
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    setAudioUrl(null);
+    setAudioPlaying(false);
+    setVoice(v);
+  };
+
+  useEffect(() => {
+    // Cleanup audio + blob URL on unmount
+    return () => {
+      if (audioRef.current) { audioRef.current.pause(); }
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (!event) return null;
   const cat = CATEGORIES[event.category];
 
@@ -125,24 +176,94 @@ export default function SidePanel({ event, onClose }) {
 
         <p className="text-white/80 leading-relaxed mb-6">{event.summary}</p>
 
-        <div className="flex items-center justify-between mb-3 pt-3 border-t border-white/5">
+        {event.discovered_by && (
+          <div className="mb-6 rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3.5" data-testid="discovered-by">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Users size={11} className="gold-text" />
+              <span className="font-mono-x text-[9px] uppercase tracking-[0.25em] gold-text">
+                Attributed To
+              </span>
+            </div>
+            <div className="text-white/90 text-[14px] leading-snug">{event.discovered_by}</div>
+          </div>
+        )}
+
+        {event.related_ids && event.related_ids.length > 0 && (
+          <div className="mb-6" data-testid="lineage-graph">
+            <div className="flex items-center gap-2 mb-2.5">
+              <GitBranch size={11} className="gold-text" />
+              <span className="font-mono-x text-[9px] uppercase tracking-[0.25em] gold-text">
+                Lineage &amp; Trade Chain
+              </span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {event.related_ids.map((rid) => {
+                const rel = allEvents.find((e) => e.id === rid);
+                if (!rel) return null;
+                const rcat = CATEGORIES[rel.category];
+                const dir = rel.year < event.year ? '←' : '→';
+                return (
+                  <button
+                    key={rid}
+                    onClick={() => onOpenRelated && onOpenRelated(rid)}
+                    data-testid={`related-${rid}`}
+                    className="group flex items-center gap-3 text-left px-3 py-2 rounded-lg border border-white/5 hover:border-[#D4AF37]/40 hover:bg-white/[0.03] transition-colors duration-200"
+                  >
+                    <span className="font-mono-x text-[10px] text-white/40 w-4 text-center">{dir}</span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${rcat.dot} shrink-0`} />
+                    <span className="font-serif-h text-[14px] text-white/90 flex-1 truncate group-hover:text-white">
+                      {rel.title}
+                    </span>
+                    <span className="font-mono-x text-[10px] text-white/40 shrink-0">
+                      {formatYear(rel.year)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between mb-3 pt-3 border-t border-white/5 flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <Sparkles size={13} className="gold-text" />
             <span className="font-mono-x text-[10px] uppercase tracking-[0.25em] gold-text">
               Historian&apos;s Deep Dive
             </span>
           </div>
-          <button
-            onClick={handleListen}
-            disabled={!aiText || loading || audioLoading}
-            data-testid="listen-button"
-            className="flex items-center gap-2 px-3 h-7 rounded-full gold-border border text-[10px] font-mono-x uppercase tracking-[0.2em] gold-text hover:bg-[#D4AF37]/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-200"
-            aria-label="Listen to narration"
-          >
-            {audioLoading ? <Loader2 size={11} className="animate-spin" /> :
-              audioPlaying ? <Pause size={11} /> : <Volume2 size={11} />}
-            {audioPlaying ? 'Pause' : 'Listen'}
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="glass rounded-full p-0.5 flex items-center" role="radiogroup" aria-label="Narrator voice">
+              <button
+                onClick={() => changeVoice('onyx')}
+                data-testid="voice-male"
+                aria-pressed={voice === 'onyx'}
+                className={`px-2.5 h-6 rounded-full font-mono-x text-[9px] uppercase tracking-[0.15em] transition-colors duration-200
+                  ${voice === 'onyx' ? 'bg-[#D4AF37] text-[#030304]' : 'text-white/60 hover:text-white'}`}
+              >
+                Male
+              </button>
+              <button
+                onClick={() => changeVoice('sage')}
+                data-testid="voice-female"
+                aria-pressed={voice === 'sage'}
+                className={`px-2.5 h-6 rounded-full font-mono-x text-[9px] uppercase tracking-[0.15em] transition-colors duration-200
+                  ${voice === 'sage' ? 'bg-[#D4AF37] text-[#030304]' : 'text-white/60 hover:text-white'}`}
+              >
+                Female
+              </button>
+            </div>
+            <button
+              onClick={handleListen}
+              disabled={!aiText || loading || audioLoading}
+              data-testid="listen-button"
+              className="flex items-center gap-2 px-3 h-7 rounded-full gold-border border text-[10px] font-mono-x uppercase tracking-[0.2em] gold-text hover:bg-[#D4AF37]/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-200"
+              aria-label="Listen to narration"
+            >
+              {audioLoading ? <Loader2 size={11} className="animate-spin" /> :
+                audioPlaying ? <Pause size={11} /> : <Volume2 size={11} />}
+              {audioPlaying ? 'Pause' : 'Listen'}
+            </button>
+          </div>
         </div>
 
         {error && (

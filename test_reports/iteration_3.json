@@ -1,0 +1,32 @@
+{
+  "summary": "Retest after handleListen fix. Backend: 8/8 pytest pass (arcs, empires, TTS valid/empty/whitespace/invalid-voice, regression root+events) in ~4.5s. Frontend: all 4 features work end-to-end. SidePanel no longer throws ReferenceError and no red overlay appears. During testing I briefly caught the app in a broken compile state (SidePanel.jsx had a duplicated tail block from lines 270-298 causing 'Unexpected token (270:8)') — hot-reload resolved it within seconds as main agent's edits landed; final file is 269 lines and compiles cleanly (only a react-hooks/exhaustive-deps warning). Search flow: typing 'black' → search-result-pan-blackdeath appears → click opens side-panel (title 'Black Death', 1347 CE, no ReferenceError). AI streaming produced 1477-char narrative; listen-button became disabled during TTS fetch (~14s), then toggled to 'PAUSE' after audio started playing (confirmed via screenshot + POST /api/tts 200 network capture). Empire overlays at 900 CE: gold polygons clearly visible across Iberia/N.Africa/MENA/Central Asia (Islamic Caliphate + Tang). Migration arcs visible eastward from Europe/MENA (Silk Road). Search behaviors: 'wheel'→[civ-sumer, tech-wheel] present; ArrowDown+Enter opens side-panel; Escape closes the results dropdown; Ctrl+K focuses search-input. 'silk' returned [civ-han, tech-papermsk] rather than 'no result' as the review request suggested — this is actually correct because both events contain 'silk' in title/summary; the request's expectation was inaccurate. No page errors captured.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_new_features.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Non-blocking: react-hooks/exhaustive-deps warning at SidePanel.jsx line 73 (useEffect missing 'audioUrl' dep). Either add to deps or add eslint-disable-next-line.",
+    "Optional: review request stated 'typing silk shows no result' — but 'silk' correctly matches civ-han and tech-papermsk via summary text. If truly desired, restrict search to title-only; otherwise the current behavior is fine and the requirement in the review request was inaccurate.",
+    "Observed a transient compile error (duplicate JSX tail lines 270-298 in SidePanel.jsx) during the test session. It self-cleared via hot-reload, but suggests an earlier partial-edit was flushed by the tooling. Recommend enabling save-on-format/prettier to prevent similar dangling appended blocks."
+  ],
+  "critical_code_review_comments": [
+    "SidePanel.jsx audio cleanup effect (lines 105-112) uses [] deps and captures the initial audioUrl closure (null) — the eslint warning about missing 'audioUrl' dep is valid; on unmount it will not revoke the current blob URL because the closed-over value is stale. Consider using audioRef pattern or a ref to hold the URL for cleanup.",
+    "handleListen never rejects when audio.play() returns a rejected promise (autoplay policy). setAudioPlaying(true) is set optimistically; add .catch on play() to reset state and setError if playback is blocked.",
+    "server.py /api/tts: 500 leaks raw upstream error text; consider generic message for prod.",
+    "History_geo empire country names rely on exact world-atlas NAME match; a client-side log of unmatched IDs would help QA catch silently dropped polygons."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (8/8)", "frontend": "100% of listed regression checks passed"},
+  "test_credentials": "n/a (no auth)",
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Regression handleListen fix is verified. SidePanel opens without errors; Listen button end-to-end (fetch /api/tts, blob, play, toggle to PAUSE) works but transition to 'Pause' label happens ~14-16s after click (TTS latency). When asserting label change in Playwright, poll up to ~20s and check for either 'Pause' text OR button becoming re-enabled (audioLoading→false). Empire polygons render correctly at year=900 via world-atlas topojson. Silk-Road arcs render at 900 CE. Screenshot proof at .screenshots/medieval.jpg from the run.",
+  "rca_of_the_issue": "Prior iteration reported handleListen was undefined. It has now been implemented (SidePanel.jsx lines 74-103) with proper play/pause toggle, blob URL creation, error handling, and audioRef management. Unmount cleanup effect added at lines 105-112 (with a minor stale-closure caveat for audioUrl noted above). During my test I hit a transient duplicate-JSX-tail compile error in SidePanel.jsx that hot-reload resolved; final code compiles and runs correctly."
+}

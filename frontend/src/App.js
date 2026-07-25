@@ -30,7 +30,7 @@ function App() {
     technology: true,
   });
 
-  const { year, setYear, playing, togglePlay, speed, cycleSpeed } = useTimeline();
+  const { year, setYear, playing, togglePlay, speed, cycleSpeed, pause } = useTimeline();
 
   useEffect(() => {
     axios.get(`${API}/events`).then((r) => setEvents(r.data.events || [])).catch(() => {});
@@ -43,13 +43,22 @@ function App() {
     [events, year, filters]
   );
 
-  const handleSelect = (e) => { setSelected(e); setFocus(e); };
+  const handleSelect = (e) => { setSelected(e); setFocus(e); pause(); };
 
   const handleSearchPick = (e) => {
-    // Jump timeline to a bit after the event so it becomes visible
+    // Jump timeline to the event year, focus camera, open panel, pause playback
     setYear(Math.max(e.year, TIMELINE_START));
     setSelected(e);
     setFocus(e);
+    pause();
+  };
+
+  const handleRelated = (relatedId) => {
+    const target = events.find((ev) => ev.id === relatedId);
+    if (!target) return;
+    setYear(Math.max(target.year, TIMELINE_START));
+    setSelected(target);
+    setFocus(target);
   };
 
   const handleJump = (targetYear) => setYear(targetYear);
@@ -90,7 +99,7 @@ function App() {
         onReset={onReset}
       />
 
-      {selected && <SidePanel event={selected} onClose={() => setSelected(null)} />}
+      {selected && <SidePanel event={selected} allEvents={events} onClose={() => setSelected(null)} onOpenRelated={handleRelated} />}
     </div>
   );
 }

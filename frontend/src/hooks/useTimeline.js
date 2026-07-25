@@ -55,5 +55,7 @@ export function useTimeline() {
     setSpeedIdx((i) => (i + 1) % SPEEDS.length);
   }, []);
 
-  return { year, setYear: jumpTo, playing, togglePlay, speedIdx, speed, cycleSpeed };
+  const pause = useCallback(() => setPlaying(false), []);
+
+  return { year, setYear: jumpTo, playing, togglePlay, speedIdx, speed, cycleSpeed, pause };
 }

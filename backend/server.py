@@ -12,6 +12,7 @@ import uuid
 
 from history_data import list_events, find_event
 from history_geo import list_arcs, list_empires
+from history_details import get_details
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
 from emergentintegrations.llm.openai import OpenAITextToSpeech
 
@@ -50,8 +51,12 @@ async def root():
 
 @api_router.get("/events")
 async def get_events():
-    """Return all historical events, sorted chronologically."""
+    """Return all historical events, sorted chronologically, with details merged."""
     events = sorted(list_events(), key=lambda e: e["year"])
+    for e in events:
+        d = get_details(e["id"])
+        e["discovered_by"] = d.get("discovered_by")
+        e["related_ids"] = d.get("related_ids", [])
     return {"events": events, "count": len(events)}
 
 
@@ -60,7 +65,8 @@ async def get_event(event_id: str):
     e = find_event(event_id)
     if not e:
         raise HTTPException(status_code=404, detail="Event not found")
-    return e
+    d = get_details(event_id)
+    return {**e, "discovered_by": d.get("discovered_by"), "related_ids": d.get("related_ids", [])}
 
 
 @api_router.post("/expand")
