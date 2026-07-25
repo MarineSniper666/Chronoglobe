@@ -1,0 +1,107 @@
+{
+  "theme": "dark",
+  "typography": {
+    "fonts": {
+      "headings": "'Cormorant Garamond', serif",
+      "subheadings": "'JetBrains Mono', monospace",
+      "body": "'Outfit', sans-serif"
+    },
+    "usage": {
+      "headings": "Use for main title, era names, and side panel historical event titles. Large, elegant serif to evoke museum-quality authority.",
+      "subheadings": "Use for overlines, dates, coordinates, and cooldown timers. Represents the 'observatory' scientific aspect.",
+      "body": "Use for long-form historical text in side panels and UI labels. Clean and highly readable."
+    },
+    "import_url": "@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500&display=swap');"
+  },
+  "colors": {
+    "background": {
+      "primary": "#030304",
+      "secondary": "#0A0A0C",
+      "glass": "rgba(10, 10, 12, 0.6)"
+    },
+    "foreground": {
+      "primary": "#F7F5F0",
+      "secondary": "#A0A0A5",
+      "muted": "#55555A"
+    },
+    "accents": {
+      "primary": "#D4AF37", 
+      "primary_hover": "#E5C865",
+      "slate": "#4A5568"
+    },
+    "categories": {
+      "civilizations": "#D4AF37",
+      "land_transformations": "#6B8E23",
+      "pandemics": "#8B0000",
+      "technologies": "#4682B4"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "Use backdrop-blur-xl with bg-[#0A0A0C]/60 and a delicate 1px border of white/10 for all floating panels (header, timeline, side drawer). Never fully transparent.",
+    "glow": "Use subtle box-shadows (e.g., shadow-[0_0_15px_rgba(212,175,55,0.2)]) around active timeline elements and active globe markers.",
+    "textures": "Overlay a subtle noise texture (SVG filter or CSS grain) on the side panel to mimic parchment/ancient cartography.",
+    "borders": "1px solid rgba(255, 255, 255, 0.1) for structure, with active states taking the category color."
+  },
+  "grids_and_layouts": {
+    "app_layout": "Full viewport (100vh, 100vw). The 3D globe is absolutely positioned at the base (z-0). UI elements float on top (z-10 to z-50).",
+    "header": "Fixed top, full width. Contains Logo/Title on left, 2D/3D toggle in center, and Current Year on right. z-index: 50. Padding p-6.",
+    "era_navigation": "Floating grid on left side. A vertical stack of buttons for eras with integrated cooldown rings (circular progress) inside or around the buttons. gap-4.",
+    "timeline_scrubber": "Fixed bottom. Full width glass panel. Play/pause on the left, horizontal timeline track in the center, speed controls on right. p-6.",
+    "side_panel": "Fixed right, h-full, w-96 (max-w-full on mobile). Slides in. Features a top image placeholder, large heading, category tag, date overline, and AI-expanded text. Uses 'bento' internal spacing (p-8, gap-6).",
+    "marker_panel": "When a user clicks a marker, open the side panel to show historical context."
+  },
+  "motion": {
+    "globe": "Auto-rotate slowly when timeline is playing. Smooth fly-to animation when a marker or era is clicked.",
+    "ui_panels": "Slide-in from right for side panel (framer-motion or CSS transform).",
+    "timeline": "Smooth continuous tracking along the timeline bar as years progress.",
+    "markers": "Pulsing animation on active globe markers (scale 1 to 1.2, opacity pulsing).",
+    "cooldowns": "Smooth SVG stroke-dashoffset animation for the 2-3 minute cooldown rings."
+  },
+  "accessibility": {
+    "2d_toggle": "CRITICAL: Provide a clearly labeled 2D Map toggle in the header for users with sensory disabilities. The 2D map should render using a 2D projection (e.g. react-simple-maps) in place of the 3D globe.",
+    "contrast": "Ensure text over the dark glass panels meets APCA/WCAG standards. Use white text over category colors if used as solid backgrounds.",
+    "reduced_motion": "Respect prefers-reduced-motion: stop globe auto-spin, disable marker pulsing, use instant transitions for side panel.",
+    "data_testid": "Add data-testid attributes to ALL interactive elements (play-button, era-button-[name], 2d-toggle, marker-[category])."
+  },
+  "media": {
+    "images": "Use the provided ancient cartography texture for the side panel header or empty states."
+  },
+  "3d_libraries": {
+    "primary": "react-globe.gl",
+    "fallback": "react-simple-maps (for 2D)",
+    "implementation_notes": "For react-globe.gl, set backgroundColor='rgba(0,0,0,0)' so the CSS dark space background shows through. Use htmlElements for markers to allow CSS styling and pulsing. Use globe.pointOfView() to animate to clicked eras/markers."
+  },
+  "image_urls": [
+    {
+      "url": "https://images.pexels.com/photos/9494906/pexels-photo-9494906.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "category": "texture",
+      "description": "Ancient cartography map texture. Use as a blended background (opacity 10-20%, mix-blend-overlay) in the side panel header."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1727034393564-dc7b0275686d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODd8MHwxfHNlYXJjaHwyfHxzcGFjZSUyMG9ic2VydmF0b3J5JTIwZGFyayUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzg0OTUxMzExfDA&ixlib=rb-4.1.0&q=85",
+      "category": "background",
+      "description": "Dark space observatory background. Use as the page's base background behind the globe (with a dark overlay if needed for contrast)."
+    }
+  ],
+  "instructions_to_main_agent": [
+    "Initialize a dark-mode first application. Set background color to #030304.",
+    "Install 'react-globe.gl' and 'react-simple-maps'. Install 'lucide-react' for icons.",
+    "Add the font import URL to your global CSS: @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500&display=swap');",
+    "Configure tailwind.config.js to include the custom font families.",
+    "For the timeline state, create a robust React component or hook to handle the current year (starting at -25000), playing state, and playback speed.",
+    "Implement the Era Jump buttons with a visual cooldown mechanism (e.g., an SVG circle that fills up over 2-3 minutes). When clicked, change the current year and pan the globe.",
+    "For the 2D fallback, implement a simple SVG map using 'react-simple-maps'. Toggle between <Globe /> and <Map2D /> based on user selection.",
+    "Create a pulsing HTML marker system for the globe. Pass custom HTML elements to globe.gl to style markers by category (civilizations, land_transformations, pandemics, technologies)."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Avoid the 'AI slop' aesthetic. Make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts. Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur). NEVER use completely transparent backgrounds for floating UI.",
+    "You MUST NOT apply universal transition (e.g., transition: all). Always add transitions for specific interactive elements excluding transforms.",
+    "You MUST NOT center align the app container. No '.App { text-align: center; }'.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Every interaction needs micro-animations - hover states, transitions, entrance animations. Static = dead.",
+    "All interactive and key informational elements MUST include a data-testid attribute to facilitate robust automated testing."
+  ]
+}
