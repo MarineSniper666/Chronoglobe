@@ -1,0 +1,53 @@
+{
+  "summary": "Tested the 4 new features (arcs, empires, TTS, search + listen). Backend is 100% green (8/8 pytest incl. arcs schema, 19 empires with emp-caliph/mongol/british/rome-emp, TTS returns 200 audio/mpeg >10KB for valid, 400 for empty/whitespace text, and invalid voice falls back to onyx and returns audio). Frontend SearchBox works (typing 'black' surfaces data-testid=search-result-pan-blackdeath, Ctrl+K focuses search-input). HOWEVER, SidePanel.jsx has a CRITICAL runtime bug: the Listen button uses onClick={handleListen} but handleListen is never defined in the component, so React throws 'ReferenceError: handleListen is not defined' the instant a SidePanel renders. This crashes the whole app (red error overlay), blocking: search-pick→side-panel flow, marker click AI streaming, Listen/TTS UI test, and by extension all original SidePanel-dependent regressions.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "SidePanel",
+        "issue": "ReferenceError: handleListen is not defined — Listen button references undefined handler; every SidePanel mount throws and shows the red uncaught runtime errors overlay. The handler function that should call POST /api/tts, receive an audio/mpeg blob, create a URL.createObjectURL, play/pause via audioRef, and toggle audioPlaying/audioLoading state was never implemented.",
+        "selector": "[data-testid=\"listen-button\"] (onClick={handleListen})",
+        "priority": "CRITICAL"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Search pick → Timeline jump + Globe focus + SidePanel open",
+        "issue": "Clicking data-testid=search-result-pan-blackdeath fires handleSearchPick which sets selected → SidePanel mounts → ReferenceError crashes the app. Search itself works; only the resulting SidePanel render is broken.",
+        "affected_selectors": ["[data-testid=\"side-panel\"]", "[data-testid=\"listen-button\"]", "[data-testid=\"ai-content\"]"]
+      },
+      {
+        "flow": "Empire overlays and migration arcs visual verification",
+        "issue": "Could not visually confirm gold Islamic Caliphate polygons or Silk Road arcs at 900 CE because the side panel from prior search click had already crashed the app with the red error overlay covering the globe. The visual verification is blocked by the same handleListen bug — not by any Globe3D issue. Empire/arc data is served correctly by the backend and passed to Globe3D via App.js.",
+        "affected_selectors": ["[data-testid=\"era-button-medieval\"]"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_new_features.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "In /app/frontend/src/components/SidePanel.jsx add a handleListen function that: (a) if audio is currently playing, pauses audioRef and setAudioPlaying(false); (b) if audioUrl already exists, plays audioRef and sets audioPlaying(true); (c) else setAudioLoading(true), POST to `${API}/tts` with {text: aiText, voice: 'onyx'}, `res.blob()`, URL.createObjectURL, new Audio(url), attach onended → setAudioPlaying(false), audio.play(), setAudioUrl(url), setAudioPlaying(true), setAudioLoading(false). Wrap in try/catch to set error and clear loading state.",
+    "Also ensure the useEffect cleanup revokes audioUrl and pauses audio when the SidePanel unmounts (currently it does that only when the event changes).",
+    "After fix, re-verify: (1) Listen button is disabled while loading (loading || !aiText), (2) toggles Pause↔Listen, (3) empire polygons at year=900 render gold via world-atlas topojson, (4) silk-road arcs render at 900 CE."
+  ],
+  "critical_code_review_comments": [
+    "SidePanel.jsx line ~136 references handleListen which is not defined anywhere in scope — this is a compile-would-catch-it-if-eslint-no-undef-were-enabled error. Recommend enabling `no-undef` rule to catch these before runtime.",
+    "SidePanel.jsx audioUrl cleanup only runs when `event` changes; on unmount (onClose) the blob URL is not revoked and audio does not stop. Add a bare-cleanup effect keyed on [] that revokes on unmount.",
+    "history_geo.EMPIRES uses country names that must exactly match the world-atlas 110m NAME property (e.g. 'Bosnia and Herz.', 'Dominican Rep.', 'United States of America'). These look correct but small mismatches will silently drop polygons — worth logging unmatched names on the client for QA.",
+    "server.py /api/tts silently truncates to 4000 chars — OK but consider returning the truncation length in a header for observability.",
+    "server.py /api/tts catches all exceptions as 500 with the raw exception in the detail — fine for dev, but for prod avoid leaking upstream provider errors verbatim."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_new_features.py (new — 8 tests, all pass)"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "~30% (SearchBox + Ctrl+K + data loading verified; every side-panel-dependent flow crashes)"},
+  "test_credentials": "n/a (no auth)",
+  "seed_data_creation": "none",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend is fully covered by /app/backend/tests/test_new_features.py (8 tests, ~6s runtime). After main agent implements handleListen in SidePanel.jsx, re-run these frontend checks: (1) typing 'black' shows search-result-pan-blackdeath, click it → side-panel opens with pan-blackdeath, current-year jumps to ≥1347; (2) wait ~12s for AI streaming to complete (loading spinner in ai-content should stop), listen-button should become enabled — click it, wait ~6s, expect toggling to 'Pause' and no console errors; (3) click era-button-medieval, screenshot the globe — expect gold polygons over MENA/N.Africa/Iberia (Caliphate) and gold arcs from Chang'an westward. Also confirm no 'handleListen' ReferenceError remains in page errors.",
+  "rca_of_the_issue": "Root cause: SidePanel.jsx was updated to include a Listen button (JSX + testid + disabled logic + audio state hooks) but the handler function `handleListen` was omitted. In React with strict-mode/dev bundling, the identifier is resolved at render time via lexical scope; not being declared throws ReferenceError, which React surfaces as the red uncaught-runtime-errors overlay covering the entire viewport. Reproduction: load app → type any query in search-input → click any result → overlay appears with 'handleListen is not defined at SidePanel (bundle.js)'. Mitigation: define handleListen (see action_items) and add a lint rule (no-undef) to prevent recurrence."
+}

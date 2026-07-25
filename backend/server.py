@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -11,7 +11,9 @@ from typing import Optional
 import uuid
 
 from history_data import list_events, find_event
+from history_geo import list_arcs, list_empires
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
+from emergentintegrations.llm.openai import OpenAITextToSpeech
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -28,6 +30,11 @@ api_router = APIRouter(prefix="/api")
 
 class ExpandRequest(BaseModel):
     event_id: str
+
+
+class TTSRequest(BaseModel):
+    text: str
+    voice: str = "onyx"
 
 
 def _fmt_year(y: int) -> str:
@@ -109,6 +116,38 @@ async def expand_event(req: ExpandRequest):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@api_router.get("/arcs")
+async def get_arcs():
+    return {"arcs": list_arcs()}
+
+
+@api_router.get("/empires")
+async def get_empires():
+    return {"empires": list_empires()}
+
+
+@api_router.post("/tts")
+async def tts(req: TTSRequest):
+    if not EMERGENT_LLM_KEY:
+        raise HTTPException(status_code=500, detail="LLM key not configured")
+    text = (req.text or "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="text is required")
+    # OpenAI TTS accepts up to 4096 characters
+    text = text[:4000]
+    voice = req.voice if req.voice in {"alloy", "ash", "coral", "echo", "fable",
+                                        "nova", "onyx", "sage", "shimmer"} else "onyx"
+    try:
+        engine = OpenAITextToSpeech(api_key=EMERGENT_LLM_KEY)
+        audio_bytes = await engine.generate_speech(
+            text=text, model="tts-1-hd", voice=voice
+        )
+    except Exception as e:
+        logging.exception("TTS failed")
+        raise HTTPException(status_code=500, detail=f"TTS failed: {e}")
+    return Response(content=audio_bytes, media_type="audio/mpeg")
 
 
 app.include_router(api_router)

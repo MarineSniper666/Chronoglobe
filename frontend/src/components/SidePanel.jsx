@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Sparkles, MapPin } from 'lucide-react';
+import { X, Sparkles, MapPin, Volume2, Pause, Loader2 } from 'lucide-react';
 import { CATEGORIES, formatYear } from '../lib/history';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -8,13 +8,23 @@ export default function SidePanel({ event, onClose }) {
   const [aiText, setAiText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
   const abortRef = useRef(null);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     if (!event) return;
     setAiText('');
     setError(null);
     setLoading(true);
+    // Reset audio when event changes
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    setAudioUrl(null);
+    setAudioPlaying(false);
+    setAudioLoading(false);
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -115,11 +125,24 @@ export default function SidePanel({ event, onClose }) {
 
         <p className="text-white/80 leading-relaxed mb-6">{event.summary}</p>
 
-        <div className="flex items-center gap-2 mb-3 pt-3 border-t border-white/5">
-          <Sparkles size={13} className="gold-text" />
-          <span className="font-mono-x text-[10px] uppercase tracking-[0.25em] gold-text">
-            Historian&apos;s Deep Dive
-          </span>
+        <div className="flex items-center justify-between mb-3 pt-3 border-t border-white/5">
+          <div className="flex items-center gap-2">
+            <Sparkles size={13} className="gold-text" />
+            <span className="font-mono-x text-[10px] uppercase tracking-[0.25em] gold-text">
+              Historian&apos;s Deep Dive
+            </span>
+          </div>
+          <button
+            onClick={handleListen}
+            disabled={!aiText || loading || audioLoading}
+            data-testid="listen-button"
+            className="flex items-center gap-2 px-3 h-7 rounded-full gold-border border text-[10px] font-mono-x uppercase tracking-[0.2em] gold-text hover:bg-[#D4AF37]/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-200"
+            aria-label="Listen to narration"
+          >
+            {audioLoading ? <Loader2 size={11} className="animate-spin" /> :
+              audioPlaying ? <Pause size={11} /> : <Volume2 size={11} />}
+            {audioPlaying ? 'Pause' : 'Listen'}
+          </button>
         </div>
 
         {error && (

@@ -8,6 +8,7 @@ import EraButtons from '@/components/EraButtons';
 import CategoryFilter from '@/components/CategoryFilter';
 import SidePanel from '@/components/SidePanel';
 import Map2D from '@/components/Map2D';
+import SearchBox from '@/components/SearchBox';
 import { useTimeline } from '@/hooks/useTimeline';
 import { TIMELINE_START } from '@/lib/history';
 
@@ -17,6 +18,8 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function App() {
   const [events, setEvents] = useState([]);
+  const [arcs, setArcs] = useState([]);
+  const [empires, setEmpires] = useState([]);
   const [mode, setMode] = useState('3d');
   const [selected, setSelected] = useState(null);
   const [focus, setFocus] = useState(null);
@@ -30,29 +33,27 @@ function App() {
   const { year, setYear, playing, togglePlay, speed, cycleSpeed } = useTimeline();
 
   useEffect(() => {
-    axios.get(`${API}/events`)
-      .then((r) => setEvents(r.data.events || []))
-      .catch((err) => console.error('Failed to load events', err));
+    axios.get(`${API}/events`).then((r) => setEvents(r.data.events || [])).catch(() => {});
+    axios.get(`${API}/arcs`).then((r) => setArcs(r.data.arcs || [])).catch(() => {});
+    axios.get(`${API}/empires`).then((r) => setEmpires(r.data.empires || [])).catch(() => {});
   }, []);
 
-  // Events that have already "happened" by current year AND pass filter
-  const visibleEvents = useMemo(() => {
-    return events.filter((e) => e.year <= year && filters[e.category]);
-  }, [events, year, filters]);
+  const visibleEvents = useMemo(
+    () => events.filter((e) => e.year <= year && filters[e.category]),
+    [events, year, filters]
+  );
 
-  const handleSelect = (e) => {
+  const handleSelect = (e) => { setSelected(e); setFocus(e); };
+
+  const handleSearchPick = (e) => {
+    // Jump timeline to a bit after the event so it becomes visible
+    setYear(Math.max(e.year, TIMELINE_START));
     setSelected(e);
     setFocus(e);
   };
 
-  const handleJump = (targetYear) => {
-    setYear(targetYear);
-  };
-
-  const toggleFilter = (key) => {
-    setFilters((f) => ({ ...f, [key]: !f[key] }));
-  };
-
+  const handleJump = (targetYear) => setYear(targetYear);
+  const toggleFilter = (key) => setFilters((f) => ({ ...f, [key]: !f[key] }));
   const onReset = () => setYear(TIMELINE_START);
 
   const autoRotate = playing && !selected;
@@ -62,8 +63,10 @@ function App() {
       {mode === '3d' ? (
         <Suspense fallback={<div className="absolute inset-0 flex items-center justify-center text-white/40 font-mono-x text-xs">Loading globe…</div>}>
           <Globe3D
-            events={events}
             visibleEvents={visibleEvents}
+            arcs={arcs}
+            empires={empires}
+            year={year}
             onSelect={handleSelect}
             focusEvent={focus}
             autoRotate={autoRotate}
@@ -74,11 +77,9 @@ function App() {
       )}
 
       <Header mode={mode} setMode={setMode} year={year} visibleCount={visibleEvents.length} />
-
+      <SearchBox events={events} onPick={handleSearchPick} />
       <EraButtons onJump={handleJump} />
-
       <CategoryFilter active={filters} onToggle={toggleFilter} />
-
       <TimelineBar
         year={year}
         setYear={setYear}
@@ -89,9 +90,7 @@ function App() {
         onReset={onReset}
       />
 
-      {selected && (
-        <SidePanel event={selected} onClose={() => setSelected(null)} />
-      )}
+      {selected && <SidePanel event={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }

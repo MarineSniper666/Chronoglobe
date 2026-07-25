@@ -4,7 +4,7 @@ import { formatYear, getEraName } from '../lib/history';
 export default function Header({ mode, setMode, year, visibleCount }) {
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-40 px-6 py-5 flex items-center justify-between pointer-events-none"
+      className="fixed top-0 left-0 right-0 z-30 px-6 py-5 flex items-center justify-between pointer-events-none"
       data-testid="app-header"
     >
       <div className="pointer-events-auto">
