@@ -204,7 +204,7 @@ function App() {
         onReset={onReset}
       />
 
-      {selected && (
+      {selected && events.length > 0 && (
         <SidePanel
           event={selected}
           allEvents={events}

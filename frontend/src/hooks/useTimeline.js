@@ -6,8 +6,20 @@ import { TIMELINE_START, TIMELINE_END, SPEEDS } from '../lib/history';
  * Advances year at speed.yps per real second.
  */
 export function useTimeline() {
-  const [year, setYear] = useState(TIMELINE_START);
-  const [playing, setPlaying] = useState(true);
+  // Lazily initialize from URL so shareable-moment links don't drift a few years
+  // between mount and the App-level URL parse effect.
+  const [year, setYear] = useState(() => {
+    if (typeof window === 'undefined') return TIMELINE_START;
+    const p = new URLSearchParams(window.location.search);
+    const y = Number(p.get('year'));
+    return Number.isFinite(y) ? Math.max(TIMELINE_START, Math.min(TIMELINE_END, y)) : TIMELINE_START;
+  });
+  const [playing, setPlaying] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const p = new URLSearchParams(window.location.search);
+    // Pause on load if the URL points to a specific shared moment
+    return !(p.get('year') || p.get('event') || p.get('compare'));
+  });
   const [speedIdx, setSpeedIdx] = useState(1);
   const rafRef = useRef(null);
   const lastTs = useRef(null);
