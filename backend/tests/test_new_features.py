@@ -38,9 +38,10 @@ class TestEmpires:
         assert r.status_code == 200
         data = r.json()
         assert "empires" in data and isinstance(data["empires"], list)
-        assert len(data["empires"]) >= 18, f"Expected ~19, got {len(data['empires'])}"
+        assert len(data["empires"]) >= 24, f"Expected 24, got {len(data['empires'])}"
         ids = {e["id"] for e in data["empires"]}
-        for expected in ["emp-rome-emp", "emp-caliph", "emp-mongol", "emp-british"]:
+        for expected in ["emp-rome-emp", "emp-caliph", "emp-mongol", "emp-british",
+                         "emp-sassanid", "emp-songhai", "emp-zulu", "emp-ming", "emp-qing"]:
             assert expected in ids, f"missing {expected}"
         cal = next(e for e in data["empires"] if e["id"] == "emp-caliph")
         for k in ["id", "name", "start_year", "end_year", "countries", "color"]:
@@ -77,6 +78,27 @@ class TestTTS:
         assert r.status_code == 200, f"status={r.status_code} body={r.text[:300]}"
         assert r.headers.get("content-type", "").startswith("audio/mpeg")
         assert len(r.content) > 5_000
+
+
+# ---- Event metadata: discovered_by + related_ids ----
+class TestEventMetadata:
+    @pytest.mark.parametrize("eid", ["civ-mongol", "civ-ottoman", "tech-gutenberg", "tech-web"])
+    def test_event_has_metadata(self, s, eid):
+        r = s.get(f"{BASE_URL}/api/events/{eid}", timeout=20)
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data.get("discovered_by"), f"{eid} missing discovered_by"
+        assert isinstance(data.get("discovered_by"), str)
+        assert isinstance(data.get("related_ids"), list) and len(data["related_ids"]) > 0
+
+    def test_related_ids_resolvable(self, s):
+        r = s.get(f"{BASE_URL}/api/events/civ-mongol", timeout=20)
+        assert r.status_code == 200
+        related = r.json()["related_ids"]
+        # every related id resolvable
+        for rid in related:
+            rr = s.get(f"{BASE_URL}/api/events/{rid}", timeout=20)
+            assert rr.status_code == 200, f"related {rid} not found"
 
 
 # ---- Regression: original endpoints ----

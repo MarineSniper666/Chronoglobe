@@ -1,7 +1,9 @@
-import { Globe, Map } from 'lucide-react';
+import { Globe, Map, Columns, Link2 } from 'lucide-react';
 import { formatYear, getEraName } from '../lib/history';
 
-export default function Header({ mode, setMode, year, visibleCount }) {
+export default function Header({
+  mode, setMode, year, visibleCount, compareOn, toggleCompare, onShare
+}) {
   return (
     <header
       className="fixed top-0 left-0 right-0 z-30 px-6 py-5 flex items-center justify-between pointer-events-none"
@@ -43,6 +45,27 @@ export default function Header({ mode, setMode, year, visibleCount }) {
             </div>
           </div>
         </div>
+
+        <button
+          onClick={toggleCompare}
+          data-testid="compare-toggle"
+          aria-pressed={compareOn}
+          className={`glass rounded-full px-3.5 h-9 flex items-center gap-2 font-mono-x text-xs transition-colors duration-200
+            ${compareOn ? 'gold-border gold-text bg-[#D4AF37]/10' : 'text-white/70 hover:text-white'}`}
+          title="Compare two years side by side"
+        >
+          <Columns size={12} /> {compareOn ? 'Comparing' : 'Compare'}
+        </button>
+
+        <button
+          onClick={onShare}
+          data-testid="share-button"
+          className="glass rounded-full w-9 h-9 flex items-center justify-center text-white/70 hover:text-white transition-colors duration-200"
+          title="Copy shareable link to this moment"
+          aria-label="Copy shareable link"
+        >
+          <Link2 size={13} />
+        </button>
 
         <div className="glass rounded-full p-1 flex items-center gap-1" role="tablist" aria-label="View mode">
           <button

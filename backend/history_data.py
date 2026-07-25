@@ -298,11 +298,75 @@ EVENTS = [
 
 
 def list_events():
+    # Attach relations & attributions at read time so we don't touch the big
+    # curated dict above manually. Keeps the raw event data compact.
+    _apply_metadata()
     return EVENTS
 
 
 def find_event(event_id: str):
+    _apply_metadata()
     for e in EVENTS:
         if e["id"] == event_id:
             return e
     return None
+
+
+# id -> (discovered_by, related_ids)
+_METADATA = {
+    "civ-sumer":       (None, ["tech-writing", "tech-wheel", "tech-bronze"]),
+    "civ-egypt":       (None, ["tech-writing", "land-sahara-green"]),
+    "civ-greece":      (None, ["civ-rome"]),
+    "civ-rome":        (None, ["civ-greece", "pan-antonine", "civ-byzantium"]),
+    "civ-byzantium":   (None, ["civ-rome", "civ-ottoman"]),
+    "civ-mongol":      ("Genghis Khan", ["pan-blackdeath", "tech-gunpowder"]),
+    "civ-ottoman":     ("Mehmed II (founder Osman I)", ["civ-byzantium", "tech-gunpowder"]),
+    "civ-inca":        ("Pachacuti", ["pan-smallpox-am"]),
+    "civ-aztec":       (None, ["pan-smallpox-am", "pan-cocoliztli"]),
+    "civ-usa":         (None, ["tech-electric", "tech-flight", "tech-transistor"]),
+    "civ-ussr":        (None, ["tech-space", "tech-nuclear"]),
+    "pan-blackdeath":  (None, ["civ-mongol"]),
+    "pan-smallpox-am": (None, ["civ-aztec", "civ-inca"]),
+    "pan-flu-1918":    (None, ["pan-covid"]),
+    "pan-hiv":         (None, ["pan-covid"]),
+    "tech-wheel":      (None, ["civ-sumer"]),
+    "tech-writing":    ("Sumerian temple scribes", ["civ-sumer"]),
+    "tech-bronze":     (None, ["tech-iron"]),
+    "tech-iron":       (None, ["tech-bronze"]),
+    "tech-alphabet":   ("Phoenician traders", ["tech-writing"]),
+    "tech-papermsk":   ("Cai Lun", ["tech-print-china", "tech-gutenberg"]),
+    "tech-gunpowder":  ("Chinese Daoist alchemists", ["civ-mongol", "civ-ottoman"]),
+    "tech-print-china":("Bi Sheng", ["tech-papermsk", "tech-gutenberg"]),
+    "tech-gutenberg":  ("Johannes Gutenberg", ["tech-print-china", "tech-papermsk"]),
+    "tech-steam":      ("James Watt", ["tech-electric"]),
+    "tech-electric":   ("Thomas Edison", ["tech-transistor"]),
+    "tech-flight":     ("Orville & Wilbur Wright", ["tech-steam"]),
+    "tech-antibiotic": ("Alexander Fleming", ["pan-flu-1918", "pan-hiv"]),
+    "tech-nuclear":    ("Manhattan Project (Oppenheimer et al.)", ["tech-electric"]),
+    "tech-transistor": ("Bardeen, Brattain, Shockley", ["tech-electric", "tech-internet"]),
+    "tech-dna":        ("Watson, Crick, Franklin, Wilkins", ["tech-crispr"]),
+    "tech-space":      ("Sergei Korolev", ["tech-moon"]),
+    "tech-moon":       ("Neil Armstrong, Buzz Aldrin", ["tech-space"]),
+    "tech-internet":   ("Vint Cerf, Bob Kahn (ARPANET team)", ["tech-transistor", "tech-web"]),
+    "tech-web":        ("Tim Berners-Lee", ["tech-internet", "tech-smart"]),
+    "tech-smart":      ("Steve Jobs & Apple team", ["tech-web", "tech-transistor"]),
+    "tech-crispr":     ("Jennifer Doudna & Emmanuelle Charpentier", ["tech-dna"]),
+    "tech-ai":         (None, ["tech-transistor", "tech-web", "tech-smart"]),
+}
+
+_metadata_applied = False
+
+def _apply_metadata():
+    global _metadata_applied
+    if _metadata_applied:
+        return
+    for e in EVENTS:
+        meta = _METADATA.get(e["id"])
+        if not meta:
+            continue
+        disc, rel = meta
+        if disc and "discovered_by" not in e:
+            e["discovered_by"] = disc
+        if rel and "related_ids" not in e:
+            e["related_ids"] = rel
+    _metadata_applied = True

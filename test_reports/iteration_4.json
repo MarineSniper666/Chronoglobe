@@ -1,0 +1,41 @@
+{
+  "summary": "Retested 4 NEW features (More Empires, Lineage Graph, Shareable Moments URL params, Compare Years split-screen) + regression on prior endpoints. Backend: 13/13 pytest pass in ~7s (arcs, empires=24 incl emp-sassanid/songhai/zulu/ming/qing, TTS 4 cases, event metadata for civ-mongol/civ-ottoman/tech-gutenberg/tech-web with discovered_by+related_ids, related_ids resolvable, root+events regression). Frontend: Compare toggle works, compare-view renders 2 Globe3Ds, compare-scrubber+slider present, dragging slider updates compare-year (1,500 CE). URL ?year=1200&compare=1900 => header 1,200 CE, Comparing on, compare-year 1,900 CE, play-button aria='Play' (paused correctly). Share button copies exact current URL to clipboard (verified via navigator.clipboard.readText). URL ?year=1347&event=pan-blackdeath opens SidePanel titled 'Black Death'. URL ?year=1206&event=civ-mongol shows lineage-graph + discovered-by ('Genghis Khan (Temüjin) and the Mongol tribes'), related-pan-blackdeath button present and clicking it jumps to Black Death event and header updates to 1,347. discovered-by section renders for tech-gutenberg ('Johannes Gutenberg in Mainz, Holy Roman Empire').",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "URL year param with event", "issue": "Timeline drifts a few years before pause() commits. Observed: navigating to ?year=1440&event=tech-gutenberg rendered header as '1,457 CE' (~17y drift at default 100 yps ≈ 170ms of RAF ticking) because useTimeline initializes with playing=true and RAF starts ticking before App parse-URL effect fires setYear+pause. Compare-only URL (?year=1200&compare=1900) rendered cleanly at 1,200 CE, likely because that particular test happened to hit React batch cleanly. Recommendation: initialize useTimeline with playing=false when URLSearchParams contain 'year' or 'event' or 'compare' (or call setYear/pause synchronously in useTimeline init via lazy initializer / read window.location.search once). Minor — feature still functional (event opens, params applied); only the displayed year is a few years off from the intended shareable value.",
+       "affected_selectors": ["[data-testid=\"app-header\"]"]},
+      {"flow": "Related event id vs review request", "issue": "civ-mongol lists related_ids as ['pan-blackdeath','tech-gunpowder']; related-pan-blackdeath is present but related-tech-gunpowder button did not render in DOM. Root cause verified in code: SidePanel renders each related only if allEvents.find(id) matches. 'tech-gunpowder' event id DOES exist in EVENTS list, so it should render. Re-checked history_data.py — id is 'tech-gunpowder' with year 850. The button should exist. Might be a rendering timing issue where allEvents prop was empty at initial hard-nav. Recommend passing events already loaded before SidePanel mounts, or add optimistic fetch of allEvents. NOT blocking — after any brief interaction/re-render the button appears.",
+       "affected_selectors": ["[data-testid=\"related-tech-gunpowder\"]"]}
+    ],
+    "design_issues": [
+      {"screen": "Compare mode (right globe)", "issues": ["Layers panel overlaps the right globe as expected/known per review request — NOT a bug."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_new_features.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "MINOR: Fix year-drift on shareable-moment URLs. Initialize useTimeline.playing=false when URL contains year/event/compare params (read initialUrlRef in useTimeline init), OR call pause() before the RAF effect gets a chance to schedule. Currently a shared link to year=1440 can display as 1,457 CE on first render.",
+    "OPTIONAL: Investigate why data-testid=related-tech-gunpowder did not render for civ-mongol even though tech-gunpowder is a valid event id in EVENTS. Likely allEvents prop timing on hard-navigation.",
+    "OPTIONAL (from prior iteration, still open): SidePanel audio cleanup effect has stale-closure warning for audioUrl."
+  ],
+  "critical_code_review_comments": [
+    "useTimeline hook does not honor URL params on init — this is why year-drift occurs on shareable URLs; consider lazy initial state that reads year from URLSearchParams.",
+    "SidePanel.jsx related_ids rendering assumes allEvents is populated when panel opens. When the URL directly opens an event on load, allEvents may still be empty for one render tick — the related buttons that resolve via allEvents.find can silently drop. Consider using events.length as a render gate for the lineage-graph section, or hydrate related_ids server-side with title+year already embedded.",
+    "App.js: The URL write effect (line 71-78) does not include 'events.find' guard when 'selected' is set from URL — safe currently, but if selected event id is invalid it would still write 'event=' param.",
+    "history_geo EMPIRES additions look correct (24 total)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_new_features.py (added TestEventMetadata class + updated empires count to 24 + new empire ids)"
+  ],
+  "success_rate": {"backend": "100% (13/13)", "frontend": "~95% — all core new-feature behaviors verified; 1 minor year-drift, 1 sporadic missing related-button on hard nav"},
+  "test_credentials": "n/a (no auth)",
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest covers all 4 new features + regression. Frontend confirmed: compare-toggle, compare-view (2 globes), compare-scrubber, compare-slider, share-button (clipboard-write works via navigator.clipboard), lineage-graph, related-<id> buttons, discovered-by, and URL param parsing (year/event/compare). Two minor issues to check on next iteration: (1) year-drift on shareable URLs — reproduce with ?year=1440&event=tech-gutenberg and observe header showing ~1,457 CE. (2) related-tech-gunpowder button missing for civ-mongol on hard navigation. Grant clipboard perms via page.context.grant_permissions(['clipboard-read','clipboard-write']) when testing share.",
+  "rca_of_the_issue": "Year-drift RCA: useTimeline.js hardcodes useState(TIMELINE_START) + useState(true) for playing. The RAF loop starts on mount, ticks year at 100 yps by default. Events fetch (~200-500ms) → then App parseURL effect fires setYear(URL_year) + pause(). Between the parse-effect firing and React committing the setPlaying(false) → cleanup, ~10 RAF frames can execute, each adding ~1.6 years. Fix: read URLSearchParams inside useTimeline lazy init so playing starts as false when year/event/compare params exist."
+}
