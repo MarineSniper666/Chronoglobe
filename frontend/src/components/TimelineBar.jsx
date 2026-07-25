@@ -1,8 +1,15 @@
 import { Play, Pause, Gauge, RotateCcw } from 'lucide-react';
-import { TIMELINE_START, TIMELINE_END, formatYear, getEraName } from '../lib/history';
+import {
+  TIMELINE_START, TIMELINE_END, TIMELINE_TICKS,
+  formatYear, getEraName, getSubPeriod,
+} from '../lib/history';
 
-export default function TimelineBar({ year, setYear, playing, togglePlay, speed, cycleSpeed, onReset }) {
-  const pct = ((year - TIMELINE_START) / (TIMELINE_END - TIMELINE_START)) * 100;
+export default function TimelineBar({
+  year, setYear, playing, togglePlay, speed, cycleSpeed, onReset,
+}) {
+  const range = TIMELINE_END - TIMELINE_START;
+  const pct = ((year - TIMELINE_START) / range) * 100;
+  const sub = getSubPeriod(year);
 
   return (
     <div
@@ -32,8 +39,19 @@ export default function TimelineBar({ year, setYear, playing, togglePlay, speed,
           <div className="flex-1">
             <div className="flex items-baseline justify-between mb-2">
               <div>
-                <div className="font-mono-x text-[10px] uppercase tracking-[0.2em] text-white/40">
-                  {getEraName(year)}
+                <div className="font-mono-x text-[10px] uppercase tracking-[0.2em] text-white/40 flex items-center gap-2">
+                  <span>{getEraName(year)}</span>
+                  {sub && (
+                    <>
+                      <span className="text-white/20">·</span>
+                      <span
+                        className="gold-text"
+                        data-testid="sub-period-label"
+                      >
+                        {sub.name}
+                      </span>
+                    </>
+                  )}
                 </div>
                 <div
                   className="font-serif-h text-2xl gold-text"
@@ -48,25 +66,62 @@ export default function TimelineBar({ year, setYear, playing, togglePlay, speed,
               </div>
             </div>
 
-            <div className="relative h-1.5 rounded-full bg-white/10 overflow-hidden">
-              <div
-                className="absolute inset-y-0 left-0 rounded-full"
-                style={{
-                  width: `${pct}%`,
-                  background: 'linear-gradient(90deg, #4A5568 0%, #D4AF37 100%)',
-                }}
-              />
-              <input
-                type="range"
-                min={TIMELINE_START}
-                max={TIMELINE_END}
-                step={1}
-                value={Math.round(year)}
-                onChange={(e) => setYear(Number(e.target.value))}
-                data-testid="timeline-slider"
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                aria-label="Timeline scrubber"
-              />
+            <div className="relative">
+              {/* Sub-era tick labels above the track */}
+              <div className="absolute -top-3 left-0 right-0 h-3 pointer-events-none">
+                {TIMELINE_TICKS.map((t) => {
+                  const left = ((t.start - TIMELINE_START) / range) * 100;
+                  if (left < 0 || left > 100) return null;
+                  return (
+                    <div
+                      key={t.id}
+                      className="absolute -translate-x-1/2"
+                      style={{ left: `${left}%` }}
+                      data-testid={`tick-${t.id}`}
+                    >
+                      <div className="w-px h-2 bg-white/25 mx-auto" />
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="relative h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full"
+                  style={{
+                    width: `${pct}%`,
+                    background: 'linear-gradient(90deg, #4A5568 0%, #D4AF37 100%)',
+                  }}
+                />
+                <input
+                  type="range"
+                  min={TIMELINE_START}
+                  max={TIMELINE_END}
+                  step={1}
+                  value={Math.round(year)}
+                  onChange={(e) => setYear(Number(e.target.value))}
+                  data-testid="timeline-slider"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  aria-label="Timeline scrubber"
+                />
+              </div>
+
+              {/* Tiny labels below the track for major ticks */}
+              <div className="relative mt-1 h-3 pointer-events-none">
+                {TIMELINE_TICKS.map((t) => {
+                  const left = ((t.start - TIMELINE_START) / range) * 100;
+                  if (left < 3 || left > 97) return null;
+                  return (
+                    <div
+                      key={`lbl-${t.id}`}
+                      className="absolute -translate-x-1/2 font-mono-x text-[8px] text-white/35 whitespace-nowrap"
+                      style={{ left: `${left}%` }}
+                    >
+                      {t.name}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
