@@ -1,0 +1,32 @@
+{
+  "summary": "First-finish smoke test for Chronoglobe. Backend endpoints (/api/, /api/events, /api/events/{id}, /api/expand) all functional with 66 events and streaming Claude Sonnet 4.5 responses that include historically accurate content (Beringia, Paleo-Indians, Smithsonian). Frontend loads cleanly, timeline auto-plays, era buttons/speed/reset/slider work, 2D/3D toggle works, category filter updates visible-count, marker click opens side-panel with streaming AI content, and close-panel works. One minor deviation noted: /api/events returns a JSON object {events:[...], count:66} rather than a raw list; the frontend consumes it correctly, so not blocking.",
+  "tested_scope": ["backend", "frontend", "integration"],
+  "passed": [
+    "GET /api/ -> 200, message 'Chronoglobe API online', events=66",
+    "GET /api/events -> 200, 66 events chronologically sorted; includes land-bering, pan-blackdeath, tech-flight; all 4 categories present",
+    "GET /api/events/land-bering -> 200 with expected fields; GET /api/events/nonexistent-xyz -> 404",
+    "POST /api/expand {event_id: 'land-bering'} streams SSE 'data:' lines with rich content mentioning Beringia, Paleo-Indians, Smithsonian, Beringian Standstill; POST /api/expand {event_id: 'bogus'} -> 404",
+    "Frontend loads all required data-testids: app-root, app-header, timeline-bar, era-buttons, category-filter, current-year, play-button, speed-button, reset-button, timeline-slider",
+    "Timeline auto-plays (current-year initial 23,918 BCE indicates advance from -25000); slider fast-forward updates current-year to 2,026 CE",
+    "Speed button cycles (observed 2x -> 5x)",
+    "All 6 era-button-* selectors present (prehistoric/ancient/classical/medieval/early-modern/modern)",
+    "Mode toggle: mode-2d shows map-2d; mode-3d returns to globe (globe re-rendered with 3D active)",
+    "Category filter civilizations toggles visible-count from 66 -> 44",
+    "2D markers (marker2d-<id>) render 66 circles; clicking opens side-panel with title/summary and streams AI content via /api/expand (observed 330+ chars streamed for tech-fire)",
+    "close-panel button hides side-panel"
+  ],
+  "failed": [
+    {
+      "area": "API contract vs spec",
+      "issue": "/api/events returns {events:[...], count:66} object instead of a raw list as the review request described. Frontend already handles this, so functional, but spec-vs-impl mismatch worth confirming.",
+      "evidence": "curl /api/events -> {\"events\":[...],\"count\":66}",
+      "priority": "LOW"
+    }
+  ],
+  "action_items": [
+    "Optional: confirm intended /api/events shape (list vs {events,count}). No functional impact currently."
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}

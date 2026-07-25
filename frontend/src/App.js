@@ -1,54 +1,97 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-import { HOME } from "@/constants/testIds";
+import { useEffect, useMemo, useState, Suspense, lazy } from 'react';
+import axios from 'axios';
+import '@/App.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import Header from '@/components/Header';
+import TimelineBar from '@/components/TimelineBar';
+import EraButtons from '@/components/EraButtons';
+import CategoryFilter from '@/components/CategoryFilter';
+import SidePanel from '@/components/SidePanel';
+import Map2D from '@/components/Map2D';
+import { useTimeline } from '@/hooks/useTimeline';
+import { TIMELINE_START } from '@/lib/history';
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
+const Globe3D = lazy(() => import('@/components/Globe3D'));
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          data-testid={HOME.emergentLink}
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function App() {
+  const [events, setEvents] = useState([]);
+  const [mode, setMode] = useState('3d');
+  const [selected, setSelected] = useState(null);
+  const [focus, setFocus] = useState(null);
+  const [filters, setFilters] = useState({
+    civilizations: true,
+    land: true,
+    pandemics: true,
+    technology: true,
+  });
+
+  const { year, setYear, playing, togglePlay, speed, cycleSpeed } = useTimeline();
+
+  useEffect(() => {
+    axios.get(`${API}/events`)
+      .then((r) => setEvents(r.data.events || []))
+      .catch((err) => console.error('Failed to load events', err));
+  }, []);
+
+  // Events that have already "happened" by current year AND pass filter
+  const visibleEvents = useMemo(() => {
+    return events.filter((e) => e.year <= year && filters[e.category]);
+  }, [events, year, filters]);
+
+  const handleSelect = (e) => {
+    setSelected(e);
+    setFocus(e);
+  };
+
+  const handleJump = (targetYear) => {
+    setYear(targetYear);
+  };
+
+  const toggleFilter = (key) => {
+    setFilters((f) => ({ ...f, [key]: !f[key] }));
+  };
+
+  const onReset = () => setYear(TIMELINE_START);
+
+  const autoRotate = playing && !selected;
+
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+    <div className="App starfield" data-testid="app-root">
+      {mode === '3d' ? (
+        <Suspense fallback={<div className="absolute inset-0 flex items-center justify-center text-white/40 font-mono-x text-xs">Loading globe…</div>}>
+          <Globe3D
+            events={events}
+            visibleEvents={visibleEvents}
+            onSelect={handleSelect}
+            focusEvent={focus}
+            autoRotate={autoRotate}
+          />
+        </Suspense>
+      ) : (
+        <Map2D visibleEvents={visibleEvents} onSelect={handleSelect} />
+      )}
+
+      <Header mode={mode} setMode={setMode} year={year} visibleCount={visibleEvents.length} />
+
+      <EraButtons onJump={handleJump} />
+
+      <CategoryFilter active={filters} onToggle={toggleFilter} />
+
+      <TimelineBar
+        year={year}
+        setYear={setYear}
+        playing={playing}
+        togglePlay={togglePlay}
+        speed={speed}
+        cycleSpeed={cycleSpeed}
+        onReset={onReset}
+      />
+
+      {selected && (
+        <SidePanel event={selected} onClose={() => setSelected(null)} />
+      )}
     </div>
   );
 }
