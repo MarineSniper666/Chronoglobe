@@ -1,19 +1,44 @@
-import { Globe, Map, Columns, Link2 } from 'lucide-react';
-import { formatYear, getEraName } from '../lib/history';
+import { Globe, Map, Columns, Link2, Bookmark } from 'lucide-react';
+import { formatYear, getEraName, getSubPeriod } from '../lib/history';
 
 export default function Header({
-  mode, setMode, year, visibleCount, compareOn, toggleCompare, onShare
+  mode, setMode, year, visibleCount, compareOn, toggleCompare,
+  onShare, onOpenBookmarks, bookmarkCount = 0,
 }) {
+  const sub = getSubPeriod(year);
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-30 px-6 py-5 flex items-center justify-between pointer-events-none"
+      className="fixed top-0 left-0 right-0 z-[60] px-6 py-5 flex items-center justify-between pointer-events-none"
       data-testid="app-header"
     >
-      <div className="pointer-events-auto">
-        <div className="font-mono-x text-[10px] uppercase tracking-[0.35em] text-white/40">
-          A World History Atlas
+      <div className="pointer-events-auto flex items-center gap-3">
+        <button
+          onClick={onOpenBookmarks}
+          data-testid="open-bookmarks"
+          className="glass rounded-full h-9 px-3 flex items-center gap-2 text-white/70 hover:text-white font-mono-x text-xs transition-colors duration-200"
+          title="Your saved moments"
+          aria-label="Open bookmarks drawer"
+        >
+          <Bookmark size={12} />
+          {bookmarkCount > 0 && (
+            <span className="gold-text" data-testid="bookmark-count">{bookmarkCount}</span>
+          )}
+        </button>
+        <button
+          onClick={onShare}
+          data-testid="share-button"
+          className="glass rounded-full w-9 h-9 flex items-center justify-center text-white/70 hover:text-white transition-colors duration-200"
+          title="Copy shareable link to this moment"
+          aria-label="Copy shareable link"
+        >
+          <Link2 size={13} />
+        </button>
+        <div>
+          <div className="font-mono-x text-[10px] uppercase tracking-[0.35em] text-white/40">
+            A World History Atlas
+          </div>
+          <h1 className="font-serif-h text-3xl gold-text leading-none mt-1">Chronoglobe</h1>
         </div>
-        <h1 className="font-serif-h text-3xl gold-text leading-none mt-1">Chronoglobe</h1>
       </div>
 
       <div className="pointer-events-auto flex items-center gap-4">
@@ -31,8 +56,14 @@ export default function Header({
             <div className="font-mono-x text-[9px] uppercase tracking-[0.25em] text-white/40">
               Era
             </div>
-            <div className="font-serif-h text-sm text-white/90 leading-none mt-1">
+            <div className="font-serif-h text-sm text-white/90 leading-none mt-1 flex items-center gap-1.5">
               {getEraName(year)}
+              {sub && (
+                <>
+                  <span className="text-white/25">·</span>
+                  <span className="gold-text" data-testid="header-sub-period">{sub.name}</span>
+                </>
+              )}
             </div>
           </div>
           <div className="w-px h-8 bg-white/10" />
@@ -55,16 +86,6 @@ export default function Header({
           title="Compare two years side by side"
         >
           <Columns size={12} /> {compareOn ? 'Comparing' : 'Compare'}
-        </button>
-
-        <button
-          onClick={onShare}
-          data-testid="share-button"
-          className="glass rounded-full w-9 h-9 flex items-center justify-center text-white/70 hover:text-white transition-colors duration-200"
-          title="Copy shareable link to this moment"
-          aria-label="Copy shareable link"
-        >
-          <Link2 size={13} />
         </button>
 
         <div className="glass rounded-full p-1 flex items-center gap-1" role="tablist" aria-label="View mode">

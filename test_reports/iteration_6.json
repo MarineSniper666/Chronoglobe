@@ -1,0 +1,45 @@
+{
+  "summary": "Re-test of iteration_5 fixes. BACKEND: 33/33 pytest checks pass (20 in test_share_cards.py incl. 4 new strict assertions + 13 in test_new_features.py). /api/share now builds ALL absolute URLs from X-Forwarded-Proto/X-Forwarded-Host: og:image == https://<public host>/api/og?event=<id>, meta-refresh + canonical == https://<public host>/?year=1440&event=tech-gutenberg, og:url on the public origin; og:image is fetchable (200 image/png) and the redirect destination returns the SPA (200 HTML, no 403). HTML escaping present. /api/og still returns a valid 1200x630 PNG (>10KB), 404 on bad event, 422 on missing param. Route reorganisation is safe: /api/arcs returns exactly 11 arcs, /api/events (68 events, no _id leak), /api/empires, /api/expand (SSE), /api/tts (audio/mpeg), /api/ root all OK. pillow==12.3.0 is declared in requirements.txt. FRONTEND: share-button fix VERIFIED — NORMAL (non-forced) Playwright click on [data-testid=share-button] succeeds in <5s while [data-testid=side-panel] is open, and the clipboard receives exactly https://temporal-atlas-2.preview.emergentagent.com/api/share?event=tech-gutenberg&year=1440. Opening that URL in the browser redirects to the SPA at ?year=1440&event=tech-gutenberg with the Gutenberg panel open (previously 403). TimelineBar collision fix VERIFIED — 4 labels render (Mesolithic, Neolithic, Early Bronze Age, Iron Age) at 1920px with zero bounding-box intersections. Regressions verified working with real mouse events: sub-era hover flyout + jump (Ancient -> Middle Bronze Age 1,900 BCE + 150s cooldown), era jump (Modern -> 1,900 CE), category filters (48 -> 42 visible), search (Cmd+K -> result -> panel), lineage graph (5 related nodes), listen/TTS (button turns to Pause, no ai-error), bookmark toggle + header count, bookmarks drawer with export/import/clear + 1 row, timeline slider, 2D/3D mode switch, compare mode with compare-slider (1,900 CE globe B). 0 error elements, no console errors (only benign WebGL perf warnings).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/og", "issue": "App-set Cache-Control: public, max-age=86400 is overridden to no-store by the preview ingress (infra behaviour, informational only)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Header right cluster / SidePanel", "issue": "STILL BROKEN (only the share-button was relocated). While the SidePanel is open, its hero gradient overlay (div.absolute.inset-0.bg-gradient-to-b inside aside[data-testid=side-panel], z-50) covers the header's right cluster. document.elementFromPoint at the centre of compare-toggle, mode-2d, mode-3d and visible-count returns that overlay (contains=false), and normal Playwright clicks time out with 'subtree intercepts pointer events'. A real user cannot switch 2D/3D or enable Compare while an event is selected. Header is z-30 vs panel z-50. Fix: raise header z-index above the panel, or set pointer-events:none on the panel's decorative hero overlay.", "selector": "[data-testid=compare-toggle], [data-testid=mode-2d], [data-testid=mode-3d], [data-testid=visible-count]", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Header with panel open", "issues": ["Year / Era / Events stat pill is still visually clipped by the SidePanel at 1920px (era sub-period text cut mid-word: 'Late Mi...'). Consider shrinking/hiding the pill or shifting the cluster left when the panel is open."]},
+      {"screen": "TimelineBar tick labels", "issues": ["Collisions are gone, but the 7% min-gap rule leaves the entire right third of the track (Antiquity, Medieval, Industrial, Space Age) with NO labels while 4 labels crowd the 55-95% band — the densest, most historically relevant region is now unlabelled. Suggest a non-linear/log timeline scale or on-hover labels so late periods stay discoverable."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_share_cards.py",
+    "/app/backend/tests/test_new_features.py",
+    "/app/test_reports/pytest/share_cards.xml",
+    "/app/test_reports/pytest/new_features.xml"
+  ],
+  "action_items": [
+    "HIGH: fix the SidePanel hero overlay intercepting pointer events over the header right cluster (compare-toggle, mode-3d, mode-2d, stat pill) — add pointer-events-none to the decorative overlay or raise header z-index above z-50.",
+    "Design: avoid clipping the Now Showing / Era / Events pill under the open SidePanel.",
+    "Design (optional): make late-period timeline labels discoverable (log scale or hover labels)."
+  ],
+  "critical_code_review_comments": [
+    "server.py /api/share trusts X-Forwarded-Host unconditionally; a spoofed header would inject an arbitrary origin into og:image/canonical (host-header injection). Prefer an explicit PUBLIC_BASE_URL env var with the forwarded headers only as a fallback, or validate the host against an allowlist.",
+    "share_card.render_og_card still passes 4-tuple RGBA fills (e.g. (255,255,255,120)) to PIL draw.text on an RGB image; alpha is silently ignored so 'muted' text renders fully opaque.",
+    "bookmarks.js importBookmarksJson still does not validate imported entries beyond event_id — a record lacking title/year renders a blank drawer row."
+  ],
+  "updated_files": [
+    "/app/frontend/src/components/TimelineBar.jsx (added data-testid=tick-label-<id> to the tick label divs — testability only, no behaviour change)",
+    "/app/backend/tests/test_share_cards.py (added test_share_urls_exactly_match_public_origin, test_share_html_escaping, test_share_dest_loads_spa, test_root; tightened arcs assertion to == 11)"
+  ],
+  "success_rate": {"backend": "100% (33/33)", "frontend": "95% (share-button + share URL + tick-label fixes verified; header right cluster still blocked by panel overlay)"},
+  "seed_data_creation": "None (bookmarks are localStorage-only; one test bookmark created in-session)",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Both iteration_5 criticals are fixed and covered by tests: run `pytest /app/backend/tests/ -q` (33 tests, all green). Remaining known issue is the SidePanel hero gradient overlay covering [data-testid=compare-toggle]/[mode-2d]/[mode-3d]/[visible-count] when the panel is open — verify with document.elementFromPoint on the control centre (contains must be true) plus a normal Playwright click. NOTE ON FLAKINESS: Playwright's actionability 'stable' check frequently times out on this app (continuous WebGL/rAF re-render) even though the click actually lands — for search-input, search-result-*, sub-era-* and sometimes compare-toggle prefer page.mouse.move/page.mouse.click at bounding-box centres, or verify the resulting state change rather than trusting the click timeout.",
+  "rca_of_the_issue": "Remaining HIGH issue: SidePanel renders a full-bleed decorative hero div (absolute inset-0 bg-gradient-to-b) without pointer-events:none inside an aside at z-50, while Header is z-30. Hit-testing at the control centres (1643,46 / 1763,46 / 1829,46 / 1567,55) returns that gradient div, so pointer events never reach compare-toggle / mode-2d / mode-3d. With the panel closed, hit-testing returns the buttons themselves and normal clicks pass, confirming the panel overlay as the sole cause."
+}

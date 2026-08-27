@@ -1,0 +1,44 @@
+{
+  "summary": "Retested the 3 new features. Backend: 14/16 pytest checks pass (/api/og PNG 1200x630 >10KB valid PNG, 404 on invalid, 422 on missing param; /api/share returns HTML with all OG/Twitter tags + http-equiv refresh; regressions /api/events, /api/arcs, /api/empires, /api/expand (SSE), /api/tts all OK). 2 failures share one CRITICAL root cause: absolute URLs in the share HTML are built from request.base_url, which behind the ingress resolves to the internal cluster host over http (http://temporal-atlas-2.cluster-3.preview.emergentcf.cloud) — that host returns 403, so og:image is unfetchable by crawlers and the meta-refresh redirect lands real users on a '403 Forbidden' page (verified in browser). Frontend: Sub-Era Markers fully working (header-sub-period 'Late Middle Ages' @1440, sub-period-label, 3 tick marks render, hover flyout on era-button-medieval with all 3 sub-era buttons, clicking sub-era-sp-high-middle jumps to 1,150 CE + starts cooldown). Bookmarks fully working (toggle -> localStorage chronoglobe:bookmarks:v1, gold star fill #D4AF37, header count, persistence across reload, left drawer at x=0, click bookmark jumps to 1,347 CE + opens panel, export download chronoglobe-bookmarks-2026-08-27.json, clear, import merge). Share button copies the correct /api/share?event=<id>&year=<y> URL, BUT the button is not clickable by mouse when the SidePanel is open (overlay intercepts). Regressions all pass, no console/page errors.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "/api/share", "issue": "og:image, og:url, canonical and the http-equiv=refresh destination are built from request.base_url which resolves to the internal ingress host over http (http://temporal-atlas-2.cluster-3.preview.emergentcf.cloud). Fetching that og:image returns 403, and a browser opening the share link is redirected to a '403 Forbidden' page. Snapshot-card sharing is therefore broken end-to-end for real users/crawlers. Fix: build the public origin from X-Forwarded-Proto/X-Forwarded-Host headers (or a PUBLIC_BASE_URL env var) and/or make the redirect destination a relative URL ('/?year=..&event=..').", "priority": "CRITICAL"}
+    ],
+    "minor": [
+      {"endpoint": "/api/og", "issue": "Pillow is NOT declared in /app/backend/requirements.txt (it only works because it is preinstalled in the image). Deployment will fail with ImportError on share_card.py. Add pillow>=10."},
+      {"endpoint": "/api/og", "issue": "Cache-Control: public, max-age=86400 set by the app is overridden by the preview ingress to no-store (infra behaviour, informational only)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Header / SidePanel", "issue": "When the SidePanel is open, the SidePanel hero overlay (div.absolute.inset-0 inside aside[data-testid=side-panel], z-50) covers the right-hand header cluster. Playwright normal click on share-button times out ('subtree intercepts pointer events'); hit-testing shows compare-toggle, mode-2d/mode-3d and visible-count are also covered. The new /api/share copy flow only works with a forced/JS click, i.e. real users cannot share the selected event. Header is z-30 vs panel z-50. Fix by raising header z-index / adding pointer-events handling, or move share (like bookmarks) to the left cluster.", "selector": "[data-testid=share-button], [data-testid=compare-toggle], [data-testid=mode-2d]", "priority": "HIGH"}
+    ],
+    "integration_issues": [
+      {"flow": "Share link opened in browser", "issue": "Copied /api/share URL renders the OG page but the meta-refresh sends the browser to the internal cluster host -> '403 Forbidden'. Same backend root cause as above.", "affected_selectors": ["[data-testid=share-button]"]}
+    ],
+    "design_issues": [
+      {"screen": "TimelineBar tick labels", "issues": ["The tiny sub-period labels below the scrubber overlap/collide badly on the compressed right side of the linear 25,000 BCE->2026 CE track ('Early Bronze Age', 'Iron Age', 'Antiquity', 'Industrial', 'Space Age' render on top of each other and are unreadable).", "tick-sp-industrial (x=1421) and tick-sp-space-age (x=1428) are only ~7px apart, so their marks/labels are indistinguishable. Consider hiding labels below a minimum pixel spacing or showing them only on hover."]},
+      {"screen": "Header with panel open", "issues": ["Year / Era / Events stat pill is visually clipped by the SidePanel on 1920px width."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_share_cards.py", "/app/backend/tests/test_new_features.py", "/app/test_reports/pytest/share_cards.xml"],
+  "action_items": [
+    "CRITICAL: derive the public origin in /api/share from X-Forwarded-Proto/X-Forwarded-Host (or an env var) so og:image is https+public and the redirect target is the SPA on the public host (or use a relative redirect).",
+    "HIGH: fix the SidePanel overlay covering the header controls (share-button, compare-toggle, mode-3d/2d) so the share flow is usable while an event is selected.",
+    "Add pillow to /app/backend/requirements.txt.",
+    "Declutter overlapping TimelineBar sub-period tick labels."
+  ],
+  "critical_code_review_comments": [
+    "server.py lines 194-197 mutate app.router.routes to strip and re-include /api routes after include_router — fragile hack. Move the /og and /share route definitions above app.include_router(api_router) and remove the duplicate include.",
+    "share_card.render_share_html interpolates event title/summary directly into HTML attributes without escaping — an apostrophe/quote in a summary would break the meta tags (XSS-safe today only because data is static). Use html.escape().",
+    "PIL draw.text is passed 4-tuple RGBA fills on an RGB image (e.g. (255,255,255,120)); alpha is silently ignored, so 'muted' text renders fully opaque. Use RGB values or an RGBA layer.",
+    "bookmarks.js importBookmarksJson does not validate/normalise imported entries beyond event_id; an imported record lacking title/year renders blank rows in the drawer."
+  ],
+  "updated_files": ["/app/backend/tests/test_share_cards.py"],
+  "success_rate": {"backend": "88% (14/16)", "frontend": "90% (all 3 features functional; share button unreachable by mouse when panel open, share link resolves to 403)"},
+  "seed_data_creation": "None (bookmarks are localStorage-only; test bookmarks were cleared/imported within the test session)",
+  "should_call_test_agent_after_fix": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Use /app/backend/tests/test_share_cards.py — 2 tests (test_share_og_urls_use_public_host, test_share_og_image_url_fetchable) intentionally fail until the public-host bug is fixed. Frontend: verify a normal (non-forced) Playwright click on [data-testid=share-button] while [data-testid=side-panel] is open, and verify navigating the copied /api/share URL lands on the SPA (not 403). Sub-era and bookmarks features are verified working; only re-check them for regressions.",
+  "rca_of_the_issue": "share_html() sets base_url = api_url = str(request.base_url). Behind the Kubernetes/Cloudflare ingress, request.base_url reflects the internal upstream host and http scheme (http://temporal-atlas-2.cluster-3.preview.emergentcf.cloud) rather than the public https origin, because the app does not honour X-Forwarded-Proto/Host (no ProxyHeadersMiddleware / --forwarded-allow-ips). Requests to that internal host from outside return 403, so both og:image and the meta-refresh destination are dead links."
+}

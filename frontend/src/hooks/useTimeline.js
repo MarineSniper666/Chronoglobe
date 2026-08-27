@@ -20,7 +20,7 @@ export function useTimeline() {
     // Pause on load if the URL points to a specific shared moment
     return !(p.get('year') || p.get('event') || p.get('compare'));
   });
-  const [speedIdx, setSpeedIdx] = useState(1);
+  const [speedIdx, setSpeedIdx] = useState(0);
   const rafRef = useRef(null);
   const lastTs = useRef(null);
 

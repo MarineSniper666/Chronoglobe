@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Sparkles, MapPin, Volume2, Pause, Loader2, Users, GitBranch } from 'lucide-react';
+import { X, Sparkles, MapPin, Volume2, Pause, Loader2, Users, GitBranch, Star } from 'lucide-react';
 import { CATEGORIES, formatYear } from '../lib/history';
+import { isBookmarked, addBookmark, removeBookmark } from '../lib/bookmarks';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-export default function SidePanel({ event, allEvents = [], onClose, onOpenRelated }) {
+export default function SidePanel({ event, allEvents = [], onClose, onOpenRelated, currentYear, onBookmarkChange }) {
   const [aiText, setAiText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -12,8 +13,25 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [voice, setVoice] = useState('onyx'); // 'onyx' = male, 'sage' = female
+  const [bookmarked, setBookmarked] = useState(false);
   const abortRef = useRef(null);
   const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (event) setBookmarked(isBookmarked(event.id));
+  }, [event]);
+
+  const toggleBookmark = () => {
+    if (!event) return;
+    if (bookmarked) {
+      removeBookmark(event.id);
+      setBookmarked(false);
+    } else {
+      addBookmark(event, currentYear ?? event.year);
+      setBookmarked(true);
+    }
+    onBookmarkChange && onBookmarkChange();
+  };
 
   useEffect(() => {
     if (!event) return;
@@ -142,6 +160,17 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
         >
           <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0C]/40 via-[#0A0A0C]/70 to-[#0A0A0C]" />
         </div>
+        <button
+          onClick={toggleBookmark}
+          data-testid="bookmark-toggle"
+          aria-pressed={bookmarked}
+          className={`absolute top-4 right-16 w-9 h-9 rounded-full glass flex items-center justify-center transition-colors duration-200
+            ${bookmarked ? 'gold-border gold-text bg-[#D4AF37]/10' : 'hover:border-white/30 text-white/80'}`}
+          aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark this moment'}
+          title={bookmarked ? 'Remove bookmark' : 'Bookmark this moment'}
+        >
+          <Star size={14} fill={bookmarked ? '#D4AF37' : 'none'} />
+        </button>
         <button
           onClick={onClose}
           data-testid="close-panel"

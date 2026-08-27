@@ -10,6 +10,8 @@ import SidePanel from '@/components/SidePanel';
 import Map2D from '@/components/Map2D';
 import SearchBox from '@/components/SearchBox';
 import CompareScrubber from '@/components/CompareScrubber';
+import BookmarksDrawer from '@/components/BookmarksDrawer';
+import { listBookmarks } from '@/lib/bookmarks';
 import { useTimeline } from '@/hooks/useTimeline';
 import { TIMELINE_START, TIMELINE_END } from '@/lib/history';
 
@@ -26,6 +28,9 @@ function App() {
   const [yearB, setYearB] = useState(1900);
   const [selected, setSelected] = useState(null);
   const [focus, setFocus] = useState(null);
+  const [bookmarksOpen, setBookmarksOpen] = useState(false);
+  const [bookmarkTick, setBookmarkTick] = useState(0);
+  const [bookmarkCount, setBookmarkCount] = useState(0);
   const [filters, setFilters] = useState({
     civilizations: true,
     land: true,
@@ -115,9 +120,18 @@ function App() {
 
   const autoRotate = playing && !selected && !compareOn;
 
+  useEffect(() => {
+    setBookmarkCount(listBookmarks().length);
+  }, [bookmarkTick]);
+
   const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      // Prefer the /api/share URL so social crawlers get the OG card;
+      // when clicked in a normal browser it redirects to the app URL.
+      const url = selected
+        ? `${window.location.origin}/api/share?event=${selected.id}&year=${Math.round(year)}`
+        : window.location.href;
+      await navigator.clipboard.writeText(url);
     } catch (e) { /* ignore */ }
   };
 
@@ -180,6 +194,8 @@ function App() {
         compareOn={compareOn}
         toggleCompare={toggleCompare}
         onShare={handleShare}
+        onOpenBookmarks={() => setBookmarksOpen(true)}
+        bookmarkCount={bookmarkCount}
       />
       <SearchBox events={events} onPick={handleSearchPick} />
       <EraButtons onJump={handleJump} />
@@ -210,8 +226,24 @@ function App() {
           allEvents={events}
           onClose={() => setSelected(null)}
           onOpenRelated={handleOpenRelated}
+          currentYear={year}
+          onBookmarkChange={() => setBookmarkTick((t) => t + 1)}
         />
       )}
+
+      <BookmarksDrawer
+        open={bookmarksOpen}
+        onClose={() => setBookmarksOpen(false)}
+        onPick={(eventId) => {
+          const e = events.find((x) => x.id === eventId);
+          if (!e) return;
+          setYear(Math.max(e.year, TIMELINE_START));
+          setSelected(e);
+          setFocus(e);
+          setBookmarksOpen(false);
+        }}
+        refreshTick={bookmarkTick}
+      />
     </div>
   );
 }

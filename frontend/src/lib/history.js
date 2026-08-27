@@ -54,11 +54,12 @@ export const TIMELINE_START = -25000;
 export const TIMELINE_END = 2026;
 
 // Playback speeds (years advanced per real second)
+// 1x is intentionally slow enough to actually read/see events unfold.
 export const SPEEDS = [
-  { label: '1x', yps: 25 },
-  { label: '2x', yps: 100 },
-  { label: '5x', yps: 500 },
-  { label: '10x', yps: 2500 },
+  { label: '1x', yps: 3 },     // ~3 years per second — natural viewing pace
+  { label: '2x', yps: 15 },    // moderate scan
+  { label: '5x', yps: 100 },   // fast scan
+  { label: '10x', yps: 500 },  // fast-forward
 ];
 
 export const ERA_COOLDOWN_MS = 150 * 1000; // 2.5 minutes

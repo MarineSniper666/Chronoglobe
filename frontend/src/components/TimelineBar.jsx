@@ -106,21 +106,28 @@ export default function TimelineBar({
                 />
               </div>
 
-              {/* Tiny labels below the track for major ticks */}
+              {/* Tiny labels below the track for major ticks — skip collisions */}
               <div className="relative mt-1 h-3 pointer-events-none">
-                {TIMELINE_TICKS.map((t) => {
-                  const left = ((t.start - TIMELINE_START) / range) * 100;
-                  if (left < 3 || left > 97) return null;
-                  return (
-                    <div
-                      key={`lbl-${t.id}`}
-                      className="absolute -translate-x-1/2 font-mono-x text-[8px] text-white/35 whitespace-nowrap"
-                      style={{ left: `${left}%` }}
-                    >
-                      {t.name}
-                    </div>
-                  );
-                })}
+                {(() => {
+                  const shown = [];
+                  const MIN_GAP_PCT = 7;
+                  return TIMELINE_TICKS.map((t) => {
+                    const left = ((t.start - TIMELINE_START) / range) * 100;
+                    if (left < 3 || left > 97) return null;
+                    if (shown.some((p) => Math.abs(p - left) < MIN_GAP_PCT)) return null;
+                    shown.push(left);
+                    return (
+                      <div
+                        key={`lbl-${t.id}`}
+                        data-testid={`tick-label-${t.id}`}
+                        className="absolute -translate-x-1/2 font-mono-x text-[8px] text-white/35 whitespace-nowrap"
+                        style={{ left: `${left}%` }}
+                      >
+                        {t.name}
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </div>

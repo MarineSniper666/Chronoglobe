@@ -2,6 +2,7 @@
 Open Graph card image + share HTML generator.
 Renders a 1200x630 PNG per event for beautiful social previews.
 """
+import html as _html
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from pathlib import Path
@@ -149,13 +150,15 @@ def render_og_card(event: dict) -> bytes:
 
 def render_share_html(event: dict, year: int, base_url: str, api_url: str, request_url: str) -> str:
     """Return an HTML page for social crawlers containing OG tags."""
-    title = event.get("title", "A moment in history")
-    desc = event.get("summary", "")
-    if len(desc) > 200:
-        desc = desc[:197] + "…"
+    title = _html.escape(event.get("title", "A moment in history"))
+    desc_raw = event.get("summary", "")
+    if len(desc_raw) > 200:
+        desc_raw = desc_raw[:197] + "…"
+    desc = _html.escape(desc_raw)
     year_str = _fmt_year(year)
     og_image = f"{api_url}/api/og?event={event['id']}"
     dest = f"{base_url}/?year={year}&event={event['id']}"
+    region = _html.escape(event.get('region', ''))
 
     return f"""<!doctype html>
 <html lang="en">
@@ -194,7 +197,7 @@ def render_share_html(event: dict, year: int, base_url: str, api_url: str, reque
 <body>
   <div class="k">Chronoglobe · A World History Atlas</div>
   <h1>{title}</h1>
-  <div class="y">{year_str} · {event.get('region','')}</div>
+  <div class="y">{year_str} · {region}</div>
   <p style="max-width:640px;opacity:.75;">{desc}</p>
   <div class="cta">
     Redirecting to the interactive globe… <a href="{dest}">Continue &rarr;</a>

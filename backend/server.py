@@ -1,5 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException
-from fastapi.responses import StreamingResponse, Response
+from fastapi import FastAPI, APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse, Response, HTMLResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -13,6 +13,7 @@ import uuid
 from history_data import list_events, find_event
 from history_geo import list_arcs, list_empires
 from history_details import get_details
+from share_card import render_og_card, render_share_html
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
 from emergentintegrations.llm.openai import OpenAITextToSpeech
 
@@ -134,6 +135,39 @@ async def get_empires():
     return {"empires": list_empires()}
 
 
+@api_router.get("/og")
+async def og_card(event: str):
+    ev = find_event(event)
+    if not ev:
+        raise HTTPException(status_code=404, detail="Event not found")
+    png = render_og_card(ev)
+    return Response(
+        content=png,
+        media_type="image/png",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
+@api_router.get("/share", response_class=HTMLResponse)
+async def share_html(request: Request, event: str, year: Optional[int] = None):
+    ev = find_event(event)
+    if not ev:
+        raise HTTPException(status_code=404, detail="Event not found")
+    fwd_proto = request.headers.get("x-forwarded-proto")
+    fwd_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    if fwd_host:
+        scheme = fwd_proto or "https"
+        host = f"{scheme}://{fwd_host}"
+    else:
+        host = str(request.base_url).rstrip('/')
+    api_url = host
+    base_url = host
+    request_url = f"{host}{request.url.path}?{request.url.query}" if request.url.query else f"{host}{request.url.path}"
+    used_year = year if year is not None else ev["year"]
+    html = render_share_html(ev, used_year, base_url, api_url, request_url)
+    return HTMLResponse(content=html)
+
+
 @api_router.post("/tts")
 async def tts(req: TTSRequest):
     if not EMERGENT_LLM_KEY:
@@ -157,6 +191,7 @@ async def tts(req: TTSRequest):
 
 
 app.include_router(api_router)
+
 
 app.add_middleware(
     CORSMiddleware,
