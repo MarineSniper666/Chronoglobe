@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="2" failures="0" skipped="0" tests="15" time="5.539" timestamp="2026-09-08T01:13:35.978423+00:00" hostname="agent-env-315d9fe4-c6c3-4992-8f29-44dedcb3a676"><testcase classname="" name="tests.test_tours" time="0.000"><error message="collection failure">backend/tests/test_tours.py:6: in &lt;module&gt;
+    BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen os&gt;:679: in __getitem__
+    ???
+E   KeyError: 'REACT_APP_BACKEND_URL'</error><error message="collection failure">backend/tests/test_tours.py:6: in &lt;module&gt;
+    BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen os&gt;:679: in __getitem__
+    ???
+E   KeyError: 'REACT_APP_BACKEND_URL'</error></testcase><testcase classname="tests.test_new_features.TestTTS" name="test_tts_valid" time="2.596" /><testcase classname="tests.test_new_features.TestEventMetadata" name="test_event_has_metadata[civ-mongol]" time="0.320" /><testcase classname="tests.test_new_features.TestEventMetadata" name="test_event_has_metadata[civ-ottoman]" time="2.250" /><testcase classname="tests.test_new_features.TestEventMetadata" name="test_event_has_metadata[tech-gutenberg]" time="0.075" /><testcase classname="tests.test_new_features.TestTTS" name="test_tts_empty_text" time="0.090" /><testcase classname="tests.test_new_features.TestEventMetadata" name="test_event_has_metadata[tech-web]" time="0.080" /><testcase classname="tests.test_new_features.TestTTS" name="test_tts_whitespace_text" time="0.086" /><testcase classname="tests.test_new_features.TestEventMetadata" name="test_related_ids_resolvable" time="2.332" /><testcase classname="tests.test_new_features.TestTTS" name="test_tts_invalid_voice_falls_back" time="2.109" /><testcase classname="tests.test_new_features.TestArcs" name="test_arcs_shape" time="0.078" /><testcase classname="tests.test_new_features.TestEmpires" name="test_empires_shape" time="0.085" /><testcase classname="tests.test_new_features.TestRegression" name="test_root" time="0.069" /><testcase classname="tests.test_new_features.TestRegression" name="test_events" time="0.078" /></testsuite></testsuites>

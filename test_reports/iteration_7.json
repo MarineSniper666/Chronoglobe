@@ -1,0 +1,32 @@
+{
+  "summary": "Iteration 7: retested Story Mode (tours), Random Moment, and Timeline Bookmark stars. BACKEND (10/10 new + 13/13 regression = 23/23 pass): /api/tours returns exactly 5 tours with ids {wheel, dyings, silk-road, moon, discovery}; each has id/title/subtitle/description/stops. /api/tours/{id} resolves for all 5 and returns 404 for unknown id. All 27 stop event_ids across all tours resolve to real /api/events (verified programmatically). Moon tour first stop is tech-steam year=1769. Regression endpoints /api/events (68), /api/arcs (11), /api/empires (24+), /api/tts (audio/mpeg), /api/ root still green. FRONTEND: Header exposes [data-testid=open-tours] and [data-testid=random-event]. Random-event click opens SidePanel and updates current-year (39 CE -> 3491 BCE observed). Tours button opens [data-testid=story-menu] listing all 5 tours; [data-testid=close-story-menu] closes it. start-tour-moon closes the menu, shows [data-testid=story-ribbon] with 'Story · Stop 1 of 5 · How We Reached the Moon', jumps timeline to 1,769 CE, opens SidePanel. story-next advances to Stop 2 of 5 and jumps year to 1,879 CE (Edison electric). story-prev returns to Stop 1. story-pause toggles state. story-exit hides the ribbon. Timeline star overlay: after bookmarking a random event (pan-blackdeath), [data-testid=timeline-bookmark-pan-blackdeath] appears on the scrubber and clicking it re-opens the SidePanel. Panel close-panel and bookmark-toggle remain clickable (header now z-[60] > panel z-50, so previous overlay bug from iteration_6 is resolved).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "StoryRibbon at top-24", "issues": ["Ribbon sits at same top-24 offset as the SidePanel controls; on narrower widths the truncated title (max-w-[380px]) can visually crowd the header stats pill. Not blocking."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_tours.py",
+    "/app/backend/tests/test_new_features.py",
+    "/app/backend/tests/test_share_cards.py",
+    "/app/test_reports/pytest/tours.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "useStoryMode.onAudioEnded closes over stale `paused` via useCallback deps but activeRef bypasses the same problem for `active` — consider a pausedRef for symmetry (currently works because SidePanel re-registers onAudioEnded each render, but it's a latent bug if the callback is ever cached).",
+    "useStoryMode.nextStop returns the same index at the end of a tour but does NOT auto-exit or notify — the ribbon remains stuck on the last stop with story-next disabled. Consider auto-exit or a 'Tour complete' state.",
+    "App.js line 262: onClose exits the tour whenever the user closes the SidePanel — this is the only way to end a tour besides story-exit. Documented behavior but non-obvious.",
+    "server.py /api/share still trusts X-Forwarded-Host unconditionally (carried over from iteration_6) — consider PUBLIC_BASE_URL env with host-header allowlist.",
+    "tours.py has no server-side validation that every stop id in TOURS exists in history_data at import time — a typo would 500 only when the user starts the tour. Add a startup validation."
+  ],
+  "updated_files": ["/app/backend/tests/test_tours.py (new)"],
+  "success_rate": {"backend": "100% (23/23 across new_features + tours)", "frontend": "100% on Story Mode / Random / Timeline stars flows"},
+  "seed_data_creation": "One test bookmark (pan-blackdeath) created in-session via localStorage; no persistent seed data.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All 3 new features (Story Mode tours, Random Moment, Timeline bookmark stars) are functional. Backend tour endpoints have full pytest coverage in /app/backend/tests/test_tours.py. Frontend story flow was exercised via story-next controls (audio auto-advance requires TTS which was rate-limited per prior note; the SidePanel does not crash when TTS errors). Iteration_6 HIGH z-index bug is fixed: Header is now z-[60] and panel is z-50, so header controls remain clickable while a SidePanel is open. Suggest main-agent verify auto-exit-on-last-stop UX decision (currently ribbon stays with disabled next).",
+  "rca_of_the_issue": "N/A — no bugs found this iteration."
+}

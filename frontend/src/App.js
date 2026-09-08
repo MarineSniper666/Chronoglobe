@@ -281,6 +281,7 @@ function App() {
         total={story.total}
         paused={story.paused}
         isLast={story.isLast}
+        complete={story.complete}
         onPause={story.pauseTour}
         onResume={story.resumeTour}
         onNext={story.nextStop}

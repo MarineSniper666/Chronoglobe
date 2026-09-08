@@ -16,6 +16,7 @@ export function useStoryMode({ events, onOpenEvent, onSetYear, onPauseTimeline }
   const [active, setActive] = useState(null);
   const [stopIndex, setStopIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [complete, setComplete] = useState(false);
   const activeRef = useRef(null);
 
   useEffect(() => { activeRef.current = active; }, [active]);
@@ -34,6 +35,7 @@ export function useStoryMode({ events, onOpenEvent, onSetYear, onPauseTimeline }
     setActive(tour);
     setStopIndex(0);
     setPaused(false);
+    setComplete(false);
     openStop(tour, 0);
   }, [openStop]);
 
@@ -43,7 +45,14 @@ export function useStoryMode({ events, onOpenEvent, onSetYear, onPauseTimeline }
     setStopIndex((i) => {
       const next = i + 1;
       if (next >= t.stops.length) {
-        // Tour complete — leave panel open on the last stop and mark done.
+        // Tour complete — mark done and auto-exit after 5 seconds
+        setComplete(true);
+        setTimeout(() => {
+          setActive(null);
+          setStopIndex(0);
+          setPaused(false);
+          setComplete(false);
+        }, 5000);
         return i;
       }
       openStop(t, next);
@@ -67,6 +76,7 @@ export function useStoryMode({ events, onOpenEvent, onSetYear, onPauseTimeline }
     setActive(null);
     setStopIndex(0);
     setPaused(false);
+    setComplete(false);
   }, []);
 
   const onAudioEnded = useCallback(() => {
@@ -80,7 +90,7 @@ export function useStoryMode({ events, onOpenEvent, onSetYear, onPauseTimeline }
   const isLast = active ? stopIndex >= total - 1 : false;
 
   return {
-    active, stopIndex, total, isLast, paused, currentEventId,
+    active, stopIndex, total, isLast, paused, complete, currentEventId,
     startTour, nextStop, prevStop, pauseTour, resumeTour, exitTour,
     onAudioEnded,
   };

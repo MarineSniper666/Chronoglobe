@@ -1,7 +1,7 @@
 import { Pause, Play, SkipForward, SkipBack, X, Clapperboard } from 'lucide-react';
 
 export default function StoryRibbon({
-  tour, stopIndex, total, paused, isLast,
+  tour, stopIndex, total, paused, isLast, complete,
   onPause, onResume, onNext, onPrev, onExit,
 }) {
   if (!tour) return null;
@@ -10,11 +10,11 @@ export default function StoryRibbon({
       className="fixed top-24 left-1/2 -translate-x-1/2 z-[55] pointer-events-none"
       data-testid="story-ribbon"
     >
-      <div className="glass rounded-full pl-4 pr-2 py-1.5 flex items-center gap-4 pointer-events-auto gold-border border">
+      <div className={`glass rounded-full pl-4 pr-2 py-1.5 flex items-center gap-4 pointer-events-auto border ${complete ? 'gold-border bg-[#D4AF37]/10' : 'gold-border'}`}>
         <Clapperboard size={13} className="gold-text" />
         <div className="flex flex-col leading-tight">
           <div className="font-mono-x text-[9px] uppercase tracking-[0.25em] text-white/40">
-            Story · Stop {stopIndex + 1} of {total}
+            {complete ? '✓ Tour Complete' : `Story · Stop ${stopIndex + 1} of ${total}`}
           </div>
           <div className="font-serif-h text-[15px] text-white truncate max-w-[380px]">
             {tour.title}
