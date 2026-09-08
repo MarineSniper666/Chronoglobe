@@ -1,9 +1,10 @@
-import { Globe, Map, Columns, Link2, Bookmark } from 'lucide-react';
+import { Globe, Map, Columns, Link2, Bookmark, Dice5, Clapperboard } from 'lucide-react';
 import { formatYear, getEraName, getSubPeriod } from '../lib/history';
 
 export default function Header({
   mode, setMode, year, visibleCount, compareOn, toggleCompare,
   onShare, onOpenBookmarks, bookmarkCount = 0,
+  onOpenTours, onRandomEvent,
 }) {
   const sub = getSubPeriod(year);
   return (
@@ -76,6 +77,26 @@ export default function Header({
             </div>
           </div>
         </div>
+
+        <button
+          onClick={onOpenTours}
+          data-testid="open-tours"
+          className="glass rounded-full h-9 px-3 flex items-center gap-2 text-white/70 hover:text-white font-mono-x text-xs transition-colors duration-200"
+          title="Guided tours"
+          aria-label="Open story mode tours"
+        >
+          <Clapperboard size={12} /> Tours
+        </button>
+
+        <button
+          onClick={onRandomEvent}
+          data-testid="random-event"
+          className="glass rounded-full w-9 h-9 flex items-center justify-center text-white/70 hover:text-white transition-colors duration-200"
+          title="Surprise me — random moment"
+          aria-label="Open a random moment"
+        >
+          <Dice5 size={13} />
+        </button>
 
         <button
           onClick={toggleCompare}

@@ -5,7 +5,7 @@ import { isBookmarked, addBookmark, removeBookmark } from '../lib/bookmarks';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-export default function SidePanel({ event, allEvents = [], onClose, onOpenRelated, currentYear, onBookmarkChange }) {
+export default function SidePanel({ event, allEvents = [], onClose, onOpenRelated, currentYear, onBookmarkChange, autoPlayAudio = false, onAudioEnded }) {
   const [aiText, setAiText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -90,6 +90,16 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
     return () => controller.abort();
   }, [event]);
 
+  // Story Mode: automatically start narration when AI text finishes streaming.
+  useEffect(() => {
+    if (!autoPlayAudio) return;
+    if (loading) return;
+    if (!aiText) return;
+    if (audioRef.current) return; // already playing
+    handleListen();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlayAudio, loading, aiText]);
+
   const handleListen = async () => {
     if (!aiText || loading) return;
     if (audioRef.current) {
@@ -110,7 +120,10 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
       const url = URL.createObjectURL(blob);
       setAudioUrl(url);
       const audio = new Audio(url);
-      audio.onended = () => setAudioPlaying(false);
+      audio.onended = () => {
+        setAudioPlaying(false);
+        onAudioEnded && onAudioEnded();
+      };
       audioRef.current = audio;
       audio.play();
       setAudioPlaying(true);
@@ -164,7 +177,7 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
           onClick={toggleBookmark}
           data-testid="bookmark-toggle"
           aria-pressed={bookmarked}
-          className={`absolute top-4 right-16 w-9 h-9 rounded-full glass flex items-center justify-center transition-colors duration-200
+          className={`absolute top-24 right-16 w-9 h-9 rounded-full glass flex items-center justify-center transition-colors duration-200 z-[70]
             ${bookmarked ? 'gold-border gold-text bg-[#D4AF37]/10' : 'hover:border-white/30 text-white/80'}`}
           aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark this moment'}
           title={bookmarked ? 'Remove bookmark' : 'Bookmark this moment'}
@@ -174,7 +187,7 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
         <button
           onClick={onClose}
           data-testid="close-panel"
-          className="absolute top-4 right-4 w-9 h-9 rounded-full glass flex items-center justify-center hover:border-white/30 transition-colors duration-200"
+          className="absolute top-24 right-4 w-9 h-9 rounded-full glass flex items-center justify-center hover:border-white/30 transition-colors duration-200 z-[70]"
           aria-label="Close panel"
         >
           <X size={15} className="text-white/80" />

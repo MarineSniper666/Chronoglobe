@@ -1,4 +1,4 @@
-import { Play, Pause, Gauge, RotateCcw } from 'lucide-react';
+import { Play, Pause, Gauge, RotateCcw, Star } from 'lucide-react';
 import {
   TIMELINE_START, TIMELINE_END, TIMELINE_TICKS,
   formatYear, getEraName, getSubPeriod,
@@ -6,6 +6,7 @@ import {
 
 export default function TimelineBar({
   year, setYear, playing, togglePlay, speed, cycleSpeed, onReset,
+  bookmarks = [], onPickBookmark,
 }) {
   const range = TIMELINE_END - TIMELINE_START;
   const pct = ((year - TIMELINE_START) / range) * 100;
@@ -101,9 +102,30 @@ export default function TimelineBar({
                   value={Math.round(year)}
                   onChange={(e) => setYear(Number(e.target.value))}
                   data-testid="timeline-slider"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   aria-label="Timeline scrubber"
                 />
+              </div>
+
+              {/* Bookmark stars overlay */}
+              <div className="absolute left-0 right-0 top-0 h-1.5 pointer-events-none">
+                {bookmarks.map((b) => {
+                  const left = ((b.year - TIMELINE_START) / range) * 100;
+                  if (left < 0 || left > 100) return null;
+                  return (
+                    <button
+                      key={b.id}
+                      onClick={() => onPickBookmark && onPickBookmark(b.event_id)}
+                      data-testid={`timeline-bookmark-${b.event_id}`}
+                      title={`${b.title} · ${b.year < 0 ? Math.abs(b.year) + ' BCE' : b.year + ' CE'}`}
+                      className="absolute -translate-x-1/2 -top-1.5 pointer-events-auto z-20"
+                      style={{ left: `${left}%` }}
+                      aria-label={`Jump to bookmark: ${b.title}`}
+                    >
+                      <Star size={11} fill="#D4AF37" className="gold-text drop-shadow-[0_0_4px_#D4AF37]" />
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Tiny labels below the track for major ticks — skip collisions */}

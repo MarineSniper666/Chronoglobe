@@ -11,8 +11,11 @@ import Map2D from '@/components/Map2D';
 import SearchBox from '@/components/SearchBox';
 import CompareScrubber from '@/components/CompareScrubber';
 import BookmarksDrawer from '@/components/BookmarksDrawer';
+import StoryMenu from '@/components/StoryMenu';
+import StoryRibbon from '@/components/StoryRibbon';
 import { listBookmarks } from '@/lib/bookmarks';
 import { useTimeline } from '@/hooks/useTimeline';
+import { useStoryMode } from '@/hooks/useStoryMode';
 import { TIMELINE_START, TIMELINE_END } from '@/lib/history';
 
 const Globe3D = lazy(() => import('@/components/Globe3D'));
@@ -31,6 +34,9 @@ function App() {
   const [bookmarksOpen, setBookmarksOpen] = useState(false);
   const [bookmarkTick, setBookmarkTick] = useState(0);
   const [bookmarkCount, setBookmarkCount] = useState(0);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [tours, setTours] = useState([]);
+  const [storyMenuOpen, setStoryMenuOpen] = useState(false);
   const [filters, setFilters] = useState({
     civilizations: true,
     land: true,
@@ -47,6 +53,7 @@ function App() {
     axios.get(`${API}/events`).then((r) => setEvents(r.data.events || [])).catch(() => {});
     axios.get(`${API}/arcs`).then((r) => setArcs(r.data.arcs || [])).catch(() => {});
     axios.get(`${API}/empires`).then((r) => setEmpires(r.data.empires || [])).catch(() => {});
+    axios.get(`${API}/tours`).then((r) => setTours(r.data.tours || [])).catch(() => {});
   }, []);
 
   // Parse URL on load: ?year=1347&event=pan-blackdeath&compare=1900
@@ -121,8 +128,26 @@ function App() {
   const autoRotate = playing && !selected && !compareOn;
 
   useEffect(() => {
-    setBookmarkCount(listBookmarks().length);
+    const list = listBookmarks();
+    setBookmarkCount(list.length);
+    setBookmarks(list);
   }, [bookmarkTick]);
+
+  const handleRandomEvent = () => {
+    if (!events.length) return;
+    const e = events[Math.floor(Math.random() * events.length)];
+    setYear(Math.max(e.year, TIMELINE_START));
+    setSelected(e);
+    setFocus(e);
+  };
+
+  // Story Mode driver
+  const story = useStoryMode({
+    events,
+    onOpenEvent: (e) => { setSelected(e); setFocus(e); },
+    onSetYear: (y) => setYear(Math.max(y, TIMELINE_START)),
+    onPauseTimeline: pause,
+  });
 
   const handleShare = async () => {
     try {
@@ -196,6 +221,8 @@ function App() {
         onShare={handleShare}
         onOpenBookmarks={() => setBookmarksOpen(true)}
         bookmarkCount={bookmarkCount}
+        onOpenTours={() => setStoryMenuOpen(true)}
+        onRandomEvent={handleRandomEvent}
       />
       <SearchBox events={events} onPick={handleSearchPick} />
       <EraButtons onJump={handleJump} />
@@ -218,18 +245,48 @@ function App() {
         speed={speed}
         cycleSpeed={cycleSpeed}
         onReset={onReset}
+        bookmarks={bookmarks}
+        onPickBookmark={(eventId) => {
+          const e = events.find((x) => x.id === eventId);
+          if (!e) return;
+          setYear(Math.max(e.year, TIMELINE_START));
+          setSelected(e);
+          setFocus(e);
+        }}
       />
 
       {selected && events.length > 0 && (
         <SidePanel
           event={selected}
           allEvents={events}
-          onClose={() => setSelected(null)}
+          onClose={() => { setSelected(null); if (story.active) story.exitTour(); }}
           onOpenRelated={handleOpenRelated}
           currentYear={year}
           onBookmarkChange={() => setBookmarkTick((t) => t + 1)}
+          autoPlayAudio={!!story.active && !story.paused}
+          onAudioEnded={story.onAudioEnded}
         />
       )}
+
+      <StoryMenu
+        open={storyMenuOpen}
+        tours={tours}
+        onClose={() => setStoryMenuOpen(false)}
+        onStart={(t) => { setStoryMenuOpen(false); story.startTour(t); }}
+      />
+
+      <StoryRibbon
+        tour={story.active}
+        stopIndex={story.stopIndex}
+        total={story.total}
+        paused={story.paused}
+        isLast={story.isLast}
+        onPause={story.pauseTour}
+        onResume={story.resumeTour}
+        onNext={story.nextStop}
+        onPrev={story.prevStop}
+        onExit={() => { story.exitTour(); }}
+      />
 
       <BookmarksDrawer
         open={bookmarksOpen}

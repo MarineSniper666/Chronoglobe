@@ -14,6 +14,7 @@ from history_data import list_events, find_event
 from history_geo import list_arcs, list_empires
 from history_details import get_details
 from share_card import render_og_card, render_share_html
+from tours import list_tours, find_tour
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
 from emergentintegrations.llm.openai import OpenAITextToSpeech
 
@@ -166,6 +167,20 @@ async def share_html(request: Request, event: str, year: Optional[int] = None):
     used_year = year if year is not None else ev["year"]
     html = render_share_html(ev, used_year, base_url, api_url, request_url)
     return HTMLResponse(content=html)
+
+
+@api_router.get("/tours")
+async def get_tours():
+    """Return all curated Story-Mode tours."""
+    return {"tours": list_tours()}
+
+
+@api_router.get("/tours/{tour_id}")
+async def get_tour(tour_id: str):
+    t = find_tour(tour_id)
+    if not t:
+        raise HTTPException(status_code=404, detail="Tour not found")
+    return t
 
 
 @api_router.post("/tts")
