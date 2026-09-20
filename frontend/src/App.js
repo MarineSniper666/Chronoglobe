@@ -302,6 +302,12 @@ function App() {
         }}
         refreshTick={bookmarkTick}
       />
+
+      <div className="fixed bottom-2 left-4 z-40 pointer-events-none select-none">
+        <span className="font-serif-h italic text-white/25 text-[11px] tracking-wide">
+          Created by Ace Ruben Masters — 2026
+        </span>
+      </div>
     </div>
   );
 }
