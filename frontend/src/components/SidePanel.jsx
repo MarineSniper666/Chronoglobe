@@ -16,7 +16,9 @@ function pickVoice(voices, gender) {
 
   const malePattern = /\b(male|david|daniel|alex|fred|guy|mark|tom|arthur)\b/i;
   const femalePattern = /\b(female|samantha|victoria|karen|susan|zira|fiona|moira|tessa|sara|allison)\b/i;
-
+  // No browser reliably ships a real "child" voice, so the child option reuses
+  // the female voice pool as its base and gets its youthful sound entirely
+  // from pitch/rate tuning in handleListen below -- no external API, no cost.
   const pattern = gender === 'male' ? malePattern : femalePattern;
   const named = pool.find((v) => pattern.test(v.name));
   if (named) return named;
@@ -143,8 +145,13 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
     const utterance = new SpeechSynthesisUtterance(cleanText);
     const chosen = pickVoice(synth.getVoices(), voice === 'onyx' ? 'male' : 'female');
     if (chosen) utterance.voice = chosen;
-    utterance.rate = 0.98;
-    utterance.pitch = voice === 'onyx' ? 0.9 : 1.1;
+    if (voice === 'child') {
+      utterance.rate = 1.12;
+      utterance.pitch = 1.75;
+    } else {
+      utterance.rate = 0.98;
+      utterance.pitch = voice === 'onyx' ? 0.9 : 1.1;
+    }
     utterance.onend = () => {
       setAudioPlaying(false);
       utteranceRef.current = null;
@@ -315,6 +322,15 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
                   ${voice === 'sage' ? 'bg-[#D4AF37] text-[#030304]' : 'text-white/60 hover:text-white'}`}
               >
                 Female
+              </button>
+              <button
+                onClick={() => changeVoice('child')}
+                data-testid="voice-child"
+                aria-pressed={voice === 'child'}
+                className={`px-2.5 h-6 rounded-full font-mono-x text-[9px] uppercase tracking-[0.15em] transition-colors duration-200
+                  ${voice === 'child' ? 'bg-[#D4AF37] text-[#030304]' : 'text-white/60 hover:text-white'}`}
+              >
+                Child
               </button>
             </div>
             <button

@@ -11,7 +11,9 @@ export function useTimeline() {
   const [year, setYear] = useState(() => {
     if (typeof window === 'undefined') return TIMELINE_START;
     const p = new URLSearchParams(window.location.search);
-    const y = Number(p.get('year'));
+    const raw = p.get('year');
+    if (raw === null || raw === '') return TIMELINE_START;
+    const y = Number(raw);
     return Number.isFinite(y) ? Math.max(TIMELINE_START, Math.min(TIMELINE_END, y)) : TIMELINE_START;
   });
   const [playing, setPlaying] = useState(() => {
