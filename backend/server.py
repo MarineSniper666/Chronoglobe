@@ -1,31 +1,23 @@
+import asyncio
+import logging
+import os
+from pathlib import Path
+from typing import Optional
+
+from dotenv import load_dotenv
 from fastapi import FastAPI, APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse, Response, HTMLResponse
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
-import logging
-from pathlib import Path
 from pydantic import BaseModel
-from typing import Optional
-import uuid
+from starlette.middleware.cors import CORSMiddleware
 
 from history_data import list_events, find_event
 from history_geo import list_arcs, list_empires
 from history_details import get_details
 from share_card import render_og_card, render_share_html
 from tours import list_tours, find_tour
-from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
-from emergentintegrations.llm.openai import OpenAITextToSpeech
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
-
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -35,15 +27,64 @@ class ExpandRequest(BaseModel):
     event_id: str
 
 
-class TTSRequest(BaseModel):
-    text: str
-    voice: str = "onyx"
-
-
 def _fmt_year(y: int) -> str:
     if y < 0:
         return f"{abs(y):,} BCE"
     return f"{y} CE"
+
+
+def _related_titles(related_ids):
+    titles = []
+    for rid in related_ids or []:
+        rel = find_event(rid)
+        if rel:
+            titles.append(f"{rel['title']} ({_fmt_year(rel['year'])})")
+    return titles
+
+
+def build_deep_dive(event: dict, details: dict) -> str:
+    """
+    Build a museum-caption-quality writeup from data already on hand,
+    in the same **Context** / **What Happened** / **Legacy** shape the
+    old LLM prompt asked for. No external API calls, no cost, no key.
+    """
+    title = event["title"]
+    year_str = _fmt_year(event["year"])
+    region = event.get("region", "an unrecorded region")
+    category = event.get("category", "history")
+    summary = event.get("summary", "")
+    source = event.get("source")
+    discovered_by = details.get("discovered_by")
+    related = _related_titles(details.get("related_ids"))
+
+    lines = [f"# {title} — {year_str}", ""]
+
+    lines.append("**Context**")
+    context = f"Located in {region}, this {category} entry marks a documented turning point around {year_str}."
+    if discovered_by:
+        context += f" It is attributed to {discovered_by}."
+    lines.append(context)
+    lines.append("")
+
+    lines.append("**What Happened**")
+    lines.append(summary or "Details for this event are still being curated.")
+    lines.append("")
+
+    lines.append("**Legacy**")
+    if related:
+        legacy = "This connects directly to " + ", ".join(related[:4])
+        if len(related) > 4:
+            legacy += f", and {len(related) - 4} more linked events"
+        legacy += " in the lineage chain — trace them from the panel above."
+    else:
+        legacy = "Its downstream effects are woven through the broader arc of this era."
+    lines.append(legacy)
+
+    if source:
+        lines.append("")
+        lines.append(f"*Source: {source}*")
+
+    return "\n".join(lines)
 
 
 @api_router.get("/")
@@ -73,51 +114,26 @@ async def get_event(event_id: str):
 
 @api_router.post("/expand")
 async def expand_event(req: ExpandRequest):
-    """Stream a deeper AI-generated historical narrative for an event."""
+    """
+    Stream a museum-caption-quality writeup for an event, built from the
+    curated dataset already in this repo. Streamed word-by-word purely so
+    the existing frontend "typing reveal" UI keeps working unchanged --
+    there's no external API call or cost involved.
+    """
     event = find_event(req.event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    if not EMERGENT_LLM_KEY:
-        raise HTTPException(status_code=500, detail="LLM key not configured")
-
-    system_message = (
-        "You are a rigorous, museum-quality historian. When asked about a historical event, "
-        "you provide a well-structured, factual expansion suitable for a curious general audience. "
-        "Cite scholarship or institutions where relevant (Smithsonian, British Museum, UNESCO, WHO, "
-        "national museums). Never invent facts. If a date is contested, say so briefly. "
-        "Use markdown with short section headings: **Context**, **What Happened**, **Legacy**. "
-        "Keep the response under 350 words."
-    )
-
-    prompt = (
-        f"Event: {event['title']}\n"
-        f"Approximate date: {_fmt_year(event['year'])}\n"
-        f"Region: {event['region']}\n"
-        f"Category: {event['category']}\n"
-        f"Curator summary: {event['summary']}\n"
-        f"Primary source hint: {event['source']}\n\n"
-        "Expand this into a museum-caption-quality narrative."
-    )
-
-    chat = LlmChat(
-        api_key=EMERGENT_LLM_KEY,
-        session_id=f"expand-{req.event_id}-{uuid.uuid4().hex[:6]}",
-        system_message=system_message,
-    ).with_model("anthropic", "claude-sonnet-4-5-20250929")
+    details = get_details(req.event_id)
+    text = build_deep_dive(event, details)
 
     async def event_generator():
-        try:
-            async for ev in chat.stream_message(UserMessage(text=prompt)):
-                if isinstance(ev, TextDelta):
-                    # SSE format
-                    yield f"data: {ev.content}\n\n"
-                elif isinstance(ev, StreamDone):
-                    yield "data: [DONE]\n\n"
-                    break
-        except Exception as exc:  # surface streaming errors to client
-            logging.exception("LLM streaming failed")
-            yield f"data: [ERROR] {str(exc)}\n\n"
+        words = text.split(" ")
+        for i, w in enumerate(words):
+            chunk = w if i == 0 else f" {w}"
+            yield f"data: {chunk}\n\n"
+            await asyncio.sleep(0.012)
+        yield "data: [DONE]\n\n"
 
     return StreamingResponse(
         event_generator(),
@@ -183,28 +199,6 @@ async def get_tour(tour_id: str):
     return t
 
 
-@api_router.post("/tts")
-async def tts(req: TTSRequest):
-    if not EMERGENT_LLM_KEY:
-        raise HTTPException(status_code=500, detail="LLM key not configured")
-    text = (req.text or "").strip()
-    if not text:
-        raise HTTPException(status_code=400, detail="text is required")
-    # OpenAI TTS accepts up to 4096 characters
-    text = text[:4000]
-    voice = req.voice if req.voice in {"alloy", "ash", "coral", "echo", "fable",
-                                        "nova", "onyx", "sage", "shimmer"} else "onyx"
-    try:
-        engine = OpenAITextToSpeech(api_key=EMERGENT_LLM_KEY)
-        audio_bytes = await engine.generate_speech(
-            text=text, model="tts-1-hd", voice=voice
-        )
-    except Exception as e:
-        logging.exception("TTS failed")
-        raise HTTPException(status_code=500, detail=f"TTS failed: {e}")
-    return Response(content=audio_bytes, media_type="audio/mpeg")
-
-
 app.include_router(api_router)
 
 
@@ -220,8 +214,3 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()

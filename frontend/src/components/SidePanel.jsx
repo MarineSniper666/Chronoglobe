@@ -1,21 +1,47 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Sparkles, MapPin, Volume2, Pause, Loader2, Users, GitBranch, Star } from 'lucide-react';
+import { X, Sparkles, MapPin, Volume2, Pause, Users, GitBranch, Star } from 'lucide-react';
 import { CATEGORIES, formatYear } from '../lib/history';
 import { isBookmarked, addBookmark, removeBookmark } from '../lib/bookmarks';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Pick a browser voice matching the requested gender. Available voices vary
+// by OS/browser, so this matches common name patterns first and falls back
+// to a deterministic split of whatever's available -- no external API,
+// no key, no cost.
+function pickVoice(voices, gender) {
+  if (!voices || voices.length === 0) return null;
+  const englishVoices = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith('en'));
+  const pool = englishVoices.length > 0 ? englishVoices : voices;
+
+  const malePattern = /\b(male|david|daniel|alex|fred|guy|mark|tom|arthur)\b/i;
+  const femalePattern = /\b(female|samantha|victoria|karen|susan|zira|fiona|moira|tessa|sara|allison)\b/i;
+
+  const pattern = gender === 'male' ? malePattern : femalePattern;
+  const named = pool.find((v) => pattern.test(v.name));
+  if (named) return named;
+
+  return gender === 'male' ? pool[0] : (pool[1] || pool[0]);
+}
+
 export default function SidePanel({ event, allEvents = [], onClose, onOpenRelated, currentYear, onBookmarkChange, autoPlayAudio = false, onAudioEnded }) {
   const [aiText, setAiText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [audioUrl, setAudioUrl] = useState(null);
-  const [audioLoading, setAudioLoading] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [voice, setVoice] = useState('onyx'); // 'onyx' = male, 'sage' = female
+  const [voice, setVoice] = useState('onyx'); // 'onyx' = male, 'sage' = female (kept for UI/testid compatibility)
   const [bookmarked, setBookmarked] = useState(false);
   const abortRef = useRef(null);
-  const audioRef = useRef(null);
+  const utteranceRef = useRef(null);
+
+  // Some browsers (notably Chrome) load the voice list asynchronously.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    const warm = () => window.speechSynthesis.getVoices();
+    warm();
+    window.speechSynthesis.addEventListener('voiceschanged', warm);
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', warm);
+  }, []);
 
   useEffect(() => {
     if (event) setBookmarked(isBookmarked(event.id));
@@ -38,12 +64,10 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
     setAiText('');
     setError(null);
     setLoading(true);
-    // Reset audio when event changes
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
-    if (audioUrl) URL.revokeObjectURL(audioUrl);
-    setAudioUrl(null);
+    // Reset narration when the event changes
+    if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+    utteranceRef.current = null;
     setAudioPlaying(false);
-    setAudioLoading(false);
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -95,62 +119,61 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
     if (!autoPlayAudio) return;
     if (loading) return;
     if (!aiText) return;
-    if (audioRef.current) return; // already playing
+    if (utteranceRef.current) return; // already playing
     handleListen();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoPlayAudio, loading, aiText]);
 
-  const handleListen = async () => {
+  const handleListen = () => {
     if (!aiText || loading) return;
-    if (audioRef.current) {
-      if (audioPlaying) { audioRef.current.pause(); setAudioPlaying(false); }
-      else { audioRef.current.play(); setAudioPlaying(true); }
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      setError('Narration is not supported in this browser.');
       return;
     }
-    setAudioLoading(true);
-    try {
-      const cleanText = aiText.replace(/\*\*/g, '').replace(/[#*_`]/g, '');
-      const res = await fetch(`${API}/tts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: cleanText, voice }),
-      });
-      if (!res.ok) throw new Error(`TTS HTTP ${res.status}`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setAudioUrl(url);
-      const audio = new Audio(url);
-      audio.onended = () => {
-        setAudioPlaying(false);
-        onAudioEnded && onAudioEnded();
-      };
-      audioRef.current = audio;
-      audio.play();
-      setAudioPlaying(true);
-    } catch (e) {
-      setError(`Audio: ${e.message}`);
-    } finally {
-      setAudioLoading(false);
+    const synth = window.speechSynthesis;
+
+    // If narration for this text is already queued, treat this as pause/resume.
+    if (utteranceRef.current) {
+      if (audioPlaying) { synth.pause(); setAudioPlaying(false); }
+      else { synth.resume(); setAudioPlaying(true); }
+      return;
     }
+
+    const cleanText = aiText.replace(/\*\*/g, '').replace(/[#*_`]/g, '');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    const chosen = pickVoice(synth.getVoices(), voice === 'onyx' ? 'male' : 'female');
+    if (chosen) utterance.voice = chosen;
+    utterance.rate = 0.98;
+    utterance.pitch = voice === 'onyx' ? 0.9 : 1.1;
+    utterance.onend = () => {
+      setAudioPlaying(false);
+      utteranceRef.current = null;
+      onAudioEnded && onAudioEnded();
+    };
+    utterance.onerror = () => {
+      setAudioPlaying(false);
+      utteranceRef.current = null;
+    };
+
+    utteranceRef.current = utterance;
+    synth.speak(utterance);
+    setAudioPlaying(true);
   };
 
   const changeVoice = (v) => {
     if (v === voice) return;
-    // Invalidate cached audio so next Listen re-fetches in new voice
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
-    if (audioUrl) URL.revokeObjectURL(audioUrl);
-    setAudioUrl(null);
+    // Cancel in-progress narration so the next Listen uses the new voice.
+    if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+    utteranceRef.current = null;
     setAudioPlaying(false);
     setVoice(v);
   };
 
   useEffect(() => {
-    // Cleanup audio + blob URL on unmount
+    // Cancel any in-progress narration on unmount
     return () => {
-      if (audioRef.current) { audioRef.current.pause(); }
-      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!event) return null;
@@ -296,13 +319,12 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
             </div>
             <button
               onClick={handleListen}
-              disabled={!aiText || loading || audioLoading}
+              disabled={!aiText || loading}
               data-testid="listen-button"
               className="flex items-center gap-2 px-3 h-7 rounded-full gold-border border text-[10px] font-mono-x uppercase tracking-[0.2em] gold-text hover:bg-[#D4AF37]/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-200"
               aria-label="Listen to narration"
             >
-              {audioLoading ? <Loader2 size={11} className="animate-spin" /> :
-                audioPlaying ? <Pause size={11} /> : <Volume2 size={11} />}
+              {audioPlaying ? <Pause size={11} /> : <Volume2 size={11} />}
               {audioPlaying ? 'Pause' : 'Listen'}
             </button>
           </div>
