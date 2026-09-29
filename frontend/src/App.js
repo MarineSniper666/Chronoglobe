@@ -42,6 +42,19 @@ function App() {
     land: true,
     pandemics: true,
     technology: true,
+    // Sub-filters within the Technology layer. Absent/true = shown; explicit
+    // false = hidden. Keys match the `subtype` field in history_data.py.
+    techSubtypes: {
+      philosophy: true,
+      religion: true,
+      medicine: true,
+      'ancient-science': true,
+      'bronze-age-science': true,
+      'medieval-science': true,
+      'industrial-science': true,
+      'modern-science': true,
+      'future-science': true,
+    },
   });
 
   const { year, setYear, playing, togglePlay, speed, cycleSpeed, pause } = useTimeline();
@@ -90,7 +103,11 @@ function App() {
   }, [year, yearB, compareOn, selected]);
 
   const filterFn = useCallback(
-    (e, y) => e.year <= y && filters[e.category],
+    (e, y) => {
+      if (e.year > y || !filters[e.category]) return false;
+      if (e.category === 'technology' && e.subtype && filters.techSubtypes?.[e.subtype] === false) return false;
+      return true;
+    },
     [filters]
   );
 
@@ -122,6 +139,10 @@ function App() {
 
   const handleJump = (targetYear) => setYear(targetYear);
   const toggleFilter = (key) => setFilters((f) => ({ ...f, [key]: !f[key] }));
+  const toggleTechSubtype = (subKey) => setFilters((f) => ({
+    ...f,
+    techSubtypes: { ...f.techSubtypes, [subKey]: !(f.techSubtypes?.[subKey] !== false) },
+  }));
   const onReset = () => setYear(TIMELINE_START);
   const toggleCompare = () => setCompareOn((v) => !v);
 
@@ -226,7 +247,7 @@ function App() {
       />
       <SearchBox events={events} onPick={handleSearchPick} />
       <EraButtons onJump={handleJump} />
-      <CategoryFilter active={filters} onToggle={toggleFilter} />
+      <CategoryFilter active={filters} onToggle={toggleFilter} onToggleSubtype={toggleTechSubtype} />
 
       {compareOn && (
         <CompareScrubber
@@ -304,7 +325,7 @@ function App() {
       />
 
       <div className="fixed bottom-2 left-4 z-40 pointer-events-none select-none">
-        <span className="font-serif-h italic text-white/25 text-[11px] tracking-wide">
+        <span className="font-serif-h italic text-white/45 text-[11px] tracking-wide">
           Created by Ace Ruben Masters — 2026
         </span>
       </div>

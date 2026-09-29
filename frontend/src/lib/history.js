@@ -5,6 +5,20 @@ export const CATEGORIES = {
   technology: { label: 'Technology', color: '#4682B4', markerClass: 'marker-tech', dot: 'dot-tech' },
 };
 
+// Subtypes within the Technology category. Order here is the display order
+// in the Layers panel's expanded sub-filter list.
+export const TECH_SUBTYPES = {
+  philosophy: 'Philosophy',
+  religion: 'Religion',
+  medicine: 'Medicine',
+  'ancient-science': 'Ancient Science',
+  'bronze-age-science': 'Bronze Age Science',
+  'medieval-science': 'Medieval Science',
+  'industrial-science': 'Industrial Science',
+  'modern-science': 'Modern Science',
+  'future-science': 'Future Science',
+};
+
 // Macro eras (top-level jumps)
 export const ERAS = [
   { id: 'prehistoric', name: 'Prehistoric', jumpTo: -25000, range: [-500000, -3500] },

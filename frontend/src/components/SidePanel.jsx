@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Sparkles, MapPin, Volume2, Pause, Users, GitBranch, Star } from 'lucide-react';
-import { CATEGORIES, formatYear } from '../lib/history';
+import { CATEGORIES, TECH_SUBTYPES, formatYear } from '../lib/history';
 import { isBookmarked, addBookmark, removeBookmark } from '../lib/bookmarks';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -221,6 +221,9 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
             <span className={`inline-block w-2 h-2 rounded-full ${cat.dot}`} />
             <span className="font-mono-x text-[10px] uppercase tracking-[0.25em] text-white/60">
               {cat.label}
+              {event.subtype && TECH_SUBTYPES[event.subtype] && (
+                <span className="text-white/35"> · {TECH_SUBTYPES[event.subtype]}</span>
+              )}
             </span>
           </div>
           <div className="font-mono-x text-[11px] text-white/70">
