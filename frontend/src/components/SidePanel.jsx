@@ -101,7 +101,10 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
               setLoading(false);
               return;
             }
-            setAiText((t) => t + payload);
+            // Reverse the backend's newline-escaping (see server.py's
+            // /api/expand) so paragraph breaks render correctly instead of
+            // getting silently dropped at the SSE frame boundary.
+            setAiText((t) => t + payload.replace(/\\n/g, '\n'));
           }
         }
       } catch (e) {
@@ -270,22 +273,55 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
                 if (!rel) return null;
                 const rcat = CATEGORIES[rel.category];
                 const dir = rel.year < event.year ? '←' : '→';
+                const why = event.related_why && event.related_why[rid];
                 return (
-                  <button
+                  <div
                     key={rid}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onOpenRelated && onOpenRelated(rid)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') onOpenRelated && onOpenRelated(rid);
+                    }}
                     data-testid={`related-${rid}`}
-                    className="group flex items-center gap-3 text-left px-3 py-2 rounded-lg border border-white/5 hover:border-[#D4AF37]/40 hover:bg-white/[0.03] transition-colors duration-200"
+                    className="group flex items-center gap-3 text-left px-3 py-2 rounded-lg border border-white/5 hover:border-[#D4AF37]/40 hover:bg-white/[0.03] transition-colors duration-200 cursor-pointer"
                   >
                     <span className="font-mono-x text-[10px] text-white/40 w-4 text-center">{dir}</span>
                     <span className={`w-1.5 h-1.5 rounded-full ${rcat.dot} shrink-0`} />
                     <span className="font-serif-h text-[14px] text-white/90 flex-1 truncate group-hover:text-white">
                       {rel.title}
                     </span>
+                    {why && (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        data-testid={`related-why-${rid}`}
+                        aria-label={`Why this is connected: ${why}`}
+                        className="relative shrink-0"
+                      >
+                        <span
+                          className="peer/why flex items-center justify-center w-3.5 h-3.5 rounded-full border border-white/30 text-white/50
+                            font-mono-x text-[9px] leading-none hover:border-[#D4AF37] hover:text-[#D4AF37] hover:bg-[#D4AF37]/10
+                            transition-colors duration-150 cursor-help select-none"
+                        >
+                          !
+                        </span>
+                        <span
+                          className="pointer-events-none absolute right-0 bottom-full mb-2 w-56 z-50 rounded-lg glass
+                            border border-[#D4AF37]/30 px-3 py-2 text-[11px] leading-snug text-white/85 font-sans
+                            opacity-0 invisible peer-hover/why:opacity-100 peer-hover/why:visible
+                            peer-focus/why:opacity-100 peer-focus/why:visible transition-opacity duration-150"
+                        >
+                          {why}
+                        </span>
+                      </span>
+                    )}
                     <span className="font-mono-x text-[10px] text-white/40 shrink-0">
                       {formatYear(rel.year)}
                     </span>
-                  </button>
+                  </div>
                 );
               })}
             </div>

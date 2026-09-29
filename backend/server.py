@@ -55,7 +55,8 @@ def build_deep_dive(event: dict, details: dict) -> str:
     summary = event.get("summary", "")
     source = event.get("source")
     discovered_by = details.get("discovered_by")
-    related = _related_titles(details.get("related_ids"))
+    related_ids = details.get("related_ids") or []
+    related_why = details.get("related_why") or {}
 
     lines = [f"# {title} — {year_str}", ""]
 
@@ -71,10 +72,32 @@ def build_deep_dive(event: dict, details: dict) -> str:
     lines.append("")
 
     lines.append("**Legacy**")
-    if related:
-        legacy = "This connects directly to " + ", ".join(related[:4])
-        if len(related) > 4:
-            legacy += f", and {len(related) - 4} more linked events"
+    # Prefer specific "why" sentences over a bare name-list -- this is the
+    # same reasoning the Lineage & Trade Chain panel's hover tooltips use,
+    # so the Deep Dive and the Lineage panel now explain themselves the
+    # same way instead of just both name-dropping the same event titles.
+    explained = []
+    unexplained_titles = []
+    for rid in related_ids:
+        rel = find_event(rid)
+        if not rel:
+            continue
+        rel_title = f"{rel['title']} ({_fmt_year(rel['year'])})"
+        why = related_why.get(rid)
+        if why:
+            explained.append(why)
+        else:
+            unexplained_titles.append(rel_title)
+
+    if explained:
+        legacy = " ".join(explained[:3])
+        leftover = len(explained[3:]) + len(unexplained_titles)
+        if leftover:
+            legacy += f" It also connects to {leftover} more linked event{'s' if leftover != 1 else ''} — trace them from the panel above."
+    elif unexplained_titles:
+        legacy = "This connects directly to " + ", ".join(unexplained_titles[:4])
+        if len(unexplained_titles) > 4:
+            legacy += f", and {len(unexplained_titles) - 4} more linked events"
         legacy += " in the lineage chain — trace them from the panel above."
     else:
         legacy = "Its downstream effects are woven through the broader arc of this era."
@@ -100,6 +123,7 @@ async def get_events():
         d = get_details(e["id"])
         e["discovered_by"] = d.get("discovered_by")
         e["related_ids"] = d.get("related_ids", [])
+        e["related_why"] = d.get("related_why", {})
     return {"events": events, "count": len(events)}
 
 
@@ -109,7 +133,12 @@ async def get_event(event_id: str):
     if not e:
         raise HTTPException(status_code=404, detail="Event not found")
     d = get_details(event_id)
-    return {**e, "discovered_by": d.get("discovered_by"), "related_ids": d.get("related_ids", [])}
+    return {
+        **e,
+        "discovered_by": d.get("discovered_by"),
+        "related_ids": d.get("related_ids", []),
+        "related_why": d.get("related_why", {}),
+    }
 
 
 @api_router.post("/expand")
@@ -131,7 +160,16 @@ async def expand_event(req: ExpandRequest):
         words = text.split(" ")
         for i, w in enumerate(words):
             chunk = w if i == 0 else f" {w}"
-            yield f"data: {chunk}\n\n"
+            # Escape real newlines before they go on the wire: a chunk that
+            # straddles a paragraph break (e.g. "BCE.\n\n**Context**\nLocated")
+            # contains a literal blank line, which is indistinguishable from
+            # the SSE "end of event" marker (also "\n\n") once it reaches the
+            # browser -- the frontend's parser would split the payload apart
+            # right there and silently drop whichever half doesn't start with
+            # "data: ". Escaping keeps every chunk on a single SSE line; the
+            # client unescapes back to real newlines after parsing.
+            safe_chunk = chunk.replace("\n", "\\n")
+            yield f"data: {safe_chunk}\n\n"
             await asyncio.sleep(0.012)
         yield "data: [DONE]\n\n"
 
