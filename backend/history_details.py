@@ -14,11 +14,11 @@ DETAILS = {
     # ------- Technology lineage: the great chain of human invention -------
     "tech-fire": {
         "discovered_by": "Early Homo (Homo erectus and later H. sapiens) across East and Southern Africa",
-        "related_ids": ["tech-pottery", "tech-agri", "tech-bronze"],
+        "related_ids": ["tech-pottery", "tech-agri", "tech-bronze", "tech-neandermed"],
     },
     "tech-agri": {
         "discovered_by": "Neolithic farming communities of the Fertile Crescent (Levant, Anatolia, Zagros foothills)",
-        "related_ids": ["tech-fire", "tech-pottery", "civ-jericho", "civ-catalhoyuk", "civ-sumer", "tech-wheel"],
+        "related_ids": ["tech-fire", "tech-pottery", "civ-jericho", "civ-catalhoyuk", "civ-sumer", "tech-wheel", "tech-dentistry"],
     },
     "tech-pottery": {
         "discovered_by": "Late Pleistocene hunter-gatherers of southern China (Xianrendong Cave)",
@@ -158,9 +158,17 @@ DETAILS = {
     },
 
     # ------- History of medicine -------
+    "tech-neandermed": {
+        "discovered_by": "Neanderthals of El Sidrón, identified by Karen Hardy's research team",
+        "related_ids": ["tech-fire", "tech-dentistry", "tech-egyptmed"],
+    },
+    "tech-dentistry": {
+        "discovered_by": "An unnamed Late Upper Paleolithic individual and whoever treated him",
+        "related_ids": ["tech-neandermed", "tech-agri", "tech-egyptmed"],
+    },
     "tech-egyptmed": {
         "discovered_by": "The physician-priests of Sais, with Imhotep formalizing the tradition centuries later",
-        "related_ids": ["tech-writing", "civ-egypt", "tech-hippocrates"],
+        "related_ids": ["tech-writing", "civ-egypt", "tech-hippocrates", "tech-dentistry"],
     },
     "tech-ayurveda": {
         "discovered_by": "Sushruta, physician of ancient India",
@@ -255,10 +263,12 @@ RELATED_WHY = {
         "tech-pottery": "Firing clay into durable ceramics required the sustained, controllable heat that mastering fire first made possible.",
         "tech-agri": "Cooking with fire unlocked nutrients in cereals and legumes, making a farming-based diet worthwhile.",
         "tech-bronze": "Smelting copper and tin into bronze demanded furnace temperatures only fire-based metallurgy could reach.",
+        "tech-neandermed": "Neanderthals mastered fire themselves, and the same resourceful use of their environment shows up in their selection of medicinal plants.",
     },
     "tech-agri": {
         "tech-fire": "Fire-cooked grains made cultivated crops like wheat and barley nutritionally worthwhile to grow at scale.",
         "tech-pottery": "Storing surplus grain and dairy from farming created the need for sealed ceramic containers.",
+        "tech-dentistry": "The rise of starchy, grain-based farming diets closely tracks the sharp increase in tooth decay visible in the skeletal record from this era onward.",
         "civ-jericho": "Jericho's Natufian foragers turned farmers, becoming one of the first year-round settlements founded on grain agriculture.",
         "civ-catalhoyuk": "Çatalhöyük's dense agricultural surplus supported one of the earliest large proto-urban communities.",
         "civ-sumer": "Reliable irrigation-based agriculture in Mesopotamia produced the food surplus that let Sumerian cities grow.",
@@ -454,10 +464,21 @@ RELATED_WHY = {
     },
 
     # ------- History of medicine -------
+    "tech-neandermed": {
+        "tech-fire": "Both fire use and medicinal plant selection show hominins deliberately manipulating their environment for survival, tens of thousands of years before Homo sapiens dominate the record.",
+        "tech-dentistry": "Tens of thousands of years later, Homo sapiens were still acting on the same basic impulse: using whatever was at hand to treat pain and disease.",
+        "tech-egyptmed": "The instinct to treat illness with deliberately chosen remedies, documented here first in Neanderthals, is the same instinct that eventually grew into Egypt's organized medical institutions.",
+    },
+    "tech-dentistry": {
+        "tech-neandermed": "This Late Paleolithic dental treatment continues an impulse to actively treat pain and disease that predates Homo sapiens entirely, first documented in Neanderthals tens of thousands of years earlier.",
+        "tech-agri": "This treatment predates the Neolithic agricultural revolution, whose new starchy, grain-heavy diets would soon make cavities and tooth decay far more common.",
+        "tech-egyptmed": "This flint-tool treatment shows people were already practicing deliberate dental care over 8,000 years before Egypt built its first known medical institutions.",
+    },
     "tech-egyptmed": {
         "tech-writing": "Egyptian physicians relied on hieroglyphic writing to record and pass down detailed case studies like those in the Edwin Smith Papyrus.",
         "civ-egypt": "This systematic medical tradition developed within, and was preserved by, the scribal institutions of ancient Egyptian civilization.",
         "tech-hippocrates": "Greek physicians including Hippocrates studied Egyptian medical knowledge, one of several traditions his school built on and moved beyond.",
+        "tech-dentistry": "Egypt's medical tradition inherited an impulse to treat disease and pain that already had a roughly 9,000-year history by the time Sais's physicians were practicing.",
     },
     "tech-ayurveda": {
         "civ-indus": "Ayurvedic medicine developed within the same Indian subcontinent civilization the Indus Valley culture had inhabited centuries earlier.",

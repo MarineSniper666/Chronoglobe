@@ -338,6 +338,14 @@ EVENTS = [
     # =========================
     # HISTORY OF MEDICINE
     # =========================
+    {"id": "tech-neandermed", "title": "Neanderthal Self-Medication", "year": -50000,
+     "lat": 43.39, "lng": -5.32, "category": "technology", "subtype": "medicine", "region": "El Sidrón, Spain",
+     "summary": "Dental calculus from Neanderthal remains at El Sidrón preserves traces of yarrow and chamomile — bitter, low-nutrition plants researchers argue were chewed for their medicinal properties. It is the oldest known evidence of self-medication, predating Homo sapiens' own documented medical practices by tens of thousands of years.",
+     "source": "Naturwissenschaften (Hardy et al., 2012)"},
+    {"id": "tech-dentistry", "title": "Earliest Dental Treatment", "year": -12000,
+     "lat": 45.9, "lng": 12.0, "category": "technology", "subtype": "medicine", "region": "Northern Italy",
+     "summary": "A Late Upper Paleolithic man's molar shows micro-scratches and cut marks from flint tools used to scrape out an infected cavity — the oldest known evidence of a deliberate dental procedure, over a thousand years before farming began.",
+     "source": "Scientific Reports (Oxilia et al., 2015; Benazzi, University of Bologna)"},
     {"id": "tech-egyptmed", "title": "Egyptian Medicine Emerges", "year": -3000,
      "lat": 30.97, "lng": 30.77, "category": "technology", "subtype": "medicine", "region": "Ancient Egypt",
      "summary": "Egypt's earliest known medical institution, a school of physicians at Sais, takes shape around 3000 BCE. Centuries later Imhotep — later worshipped as a god of medicine — argues disease has natural, not purely supernatural, causes; the Edwin Smith Papyrus (c. 1600 BCE) preserves this tradition's surgical case studies centuries after the fact.",
