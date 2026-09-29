@@ -26,7 +26,7 @@ DETAILS = {
     },
     "tech-writing": {
         "discovered_by": "Sumerian temple accountants in Uruk",
-        "related_ids": ["civ-sumer", "tech-alphabet", "tech-papermsk", "tech-print-china", "tech-gutenberg"],
+        "related_ids": ["civ-sumer", "tech-alphabet", "tech-papermsk", "tech-print-china", "tech-gutenberg", "tech-egyptmed"],
     },
     "tech-wheel": {
         "discovered_by": "Late Neolithic Mesopotamian potters and steppe pastoralists",
@@ -50,7 +50,7 @@ DETAILS = {
     },
     "tech-upanishads": {
         "discovered_by": "Vedic sages and philosophers of ancient India",
-        "related_ids": ["tech-buddhism", "tech-confucius", "civ-indus"],
+        "related_ids": ["tech-buddhism", "tech-confucius", "civ-indus", "tech-ayurveda"],
     },
     "tech-torah": {
         "discovered_by": "Jewish scribes during and after the Babylonian exile",
@@ -114,7 +114,7 @@ DETAILS = {
     },
     "tech-antibiotic": {
         "discovered_by": "Alexander Fleming at St. Mary's Hospital, London",
-        "related_ids": ["tech-dna", "tech-crispr", "pan-flu-1918", "pan-hiv"],
+        "related_ids": ["tech-dna", "tech-crispr", "pan-flu-1918", "pan-hiv", "tech-germtheory", "tech-antiseptic"],
     },
     "tech-nuclear": {
         "discovered_by": "The Manhattan Project (Oppenheimer, Fermi, Szilard et al.) in the United States",
@@ -157,20 +157,62 @@ DETAILS = {
         "related_ids": ["tech-transistor", "tech-internet", "tech-web", "tech-smart"],
     },
 
+    # ------- History of medicine -------
+    "tech-egyptmed": {
+        "discovered_by": "The physician-priests of Sais, with Imhotep formalizing the tradition centuries later",
+        "related_ids": ["tech-writing", "civ-egypt", "tech-hippocrates"],
+    },
+    "tech-ayurveda": {
+        "discovered_by": "Sushruta, physician of ancient India",
+        "related_ids": ["civ-indus", "tech-upanishads", "tech-hippocrates"],
+    },
+    "tech-hippocrates": {
+        "discovered_by": "Hippocrates of Kos and his school",
+        "related_ids": ["tech-egyptmed", "civ-greece", "tech-galen"],
+    },
+    "tech-galen": {
+        "discovered_by": "Galen of Pergamon",
+        "related_ids": ["tech-hippocrates", "civ-rome", "tech-ibnsina"],
+    },
+    "tech-ibnsina": {
+        "discovered_by": "Ibn Sina (Avicenna) in Persia",
+        "related_ids": ["tech-galen", "civ-islam", "pan-blackdeath"],
+    },
+    "tech-quarantine": {
+        "discovered_by": "The Republic of Ragusa's Great Council",
+        "related_ids": ["pan-blackdeath", "tech-ibnsina", "tech-vaccine"],
+    },
+    "tech-vaccine": {
+        "discovered_by": "Edward Jenner in Gloucestershire, England",
+        "related_ids": ["pan-smallpox-am", "tech-germtheory", "tech-quarantine"],
+    },
+    "tech-anesthesia": {
+        "discovered_by": "William T. G. Morton in Boston",
+        "related_ids": ["tech-antiseptic", "tech-germtheory"],
+    },
+    "tech-germtheory": {
+        "discovered_by": "Louis Pasteur, with Robert Koch's later formalization",
+        "related_ids": ["tech-antibiotic", "tech-antiseptic", "tech-vaccine"],
+    },
+    "tech-antiseptic": {
+        "discovered_by": "Joseph Lister in Glasgow",
+        "related_ids": ["tech-germtheory", "tech-anesthesia", "tech-antibiotic"],
+    },
+
     # ------- Civilizations -------
     "civ-jericho": {"discovered_by": "Natufian foragers turned farmers", "related_ids": ["tech-agri", "civ-catalhoyuk", "civ-sumer"]},
     "civ-catalhoyuk": {"discovered_by": "Neolithic Anatolian farmers", "related_ids": ["tech-agri", "tech-pottery", "civ-jericho"]},
     "civ-sumer": {"discovered_by": "Sumerian city-states of southern Mesopotamia", "related_ids": ["tech-writing", "tech-wheel", "tech-bronze", "civ-egypt", "civ-indus"]},
-    "civ-egypt": {"discovered_by": "King Narmer, unifying Upper and Lower Egypt", "related_ids": ["tech-writing", "civ-sumer", "civ-greece", "civ-rome"]},
-    "civ-indus": {"discovered_by": "Harappan urbanists of the Indus and Sarasvati valleys", "related_ids": ["tech-agri", "civ-sumer", "civ-xia"]},
+    "civ-egypt": {"discovered_by": "King Narmer, unifying Upper and Lower Egypt", "related_ids": ["tech-writing", "civ-sumer", "civ-greece", "civ-rome", "tech-egyptmed"]},
+    "civ-indus": {"discovered_by": "Harappan urbanists of the Indus and Sarasvati valleys", "related_ids": ["tech-agri", "civ-sumer", "civ-xia", "tech-ayurveda"]},
     "civ-xia": {"discovered_by": "Erlitou culture along the Yellow River", "related_ids": ["tech-bronze", "civ-han", "civ-tang"]},
     "civ-olmec": {"discovered_by": "Olmec heartland peoples of the Gulf coast", "related_ids": ["civ-maya", "civ-aztec"]},
-    "civ-greece": {"discovered_by": "Cleisthenes and the Athenian demos", "related_ids": ["tech-alphabet", "civ-rome", "civ-byzantium", "tech-greekphil"]},
-    "civ-rome": {"discovered_by": "Augustus (Octavian), first princeps of Rome", "related_ids": ["civ-greece", "civ-byzantium", "pan-antonine", "land-vesuvius", "tech-christianity"]},
+    "civ-greece": {"discovered_by": "Cleisthenes and the Athenian demos", "related_ids": ["tech-alphabet", "civ-rome", "civ-byzantium", "tech-greekphil", "tech-hippocrates"]},
+    "civ-rome": {"discovered_by": "Augustus (Octavian), first princeps of Rome", "related_ids": ["civ-greece", "civ-byzantium", "pan-antonine", "land-vesuvius", "tech-christianity", "tech-galen"]},
     "civ-han": {"discovered_by": "Emperor Wu of Han and the Silk Road merchants", "related_ids": ["civ-xia", "tech-papermsk", "civ-tang", "tech-confucius", "tech-buddhism"]},
     "civ-maya": {"discovered_by": "Classic Maya city-states (Tikal, Palenque, Copán)", "related_ids": ["civ-olmec", "civ-aztec"]},
     "civ-byzantium": {"discovered_by": "Justinian I and the Eastern Roman court", "related_ids": ["civ-rome", "pan-justinian", "civ-ottoman"]},
-    "civ-islam": {"discovered_by": "The Abbasid Caliphate and the House of Wisdom scholars", "related_ids": ["tech-papermsk", "civ-byzantium", "civ-mali", "civ-ottoman", "tech-islam", "tech-zoroaster"]},
+    "civ-islam": {"discovered_by": "The Abbasid Caliphate and the House of Wisdom scholars", "related_ids": ["tech-papermsk", "civ-byzantium", "civ-mali", "civ-ottoman", "tech-islam", "tech-zoroaster", "tech-ibnsina"]},
     "civ-tang": {"discovered_by": "Tang emperors ruling from Chang'an", "related_ids": ["civ-han", "tech-gunpowder", "tech-print-china", "tech-buddhism"]},
     "civ-vikings": {"discovered_by": "Norse seafarers of Scandinavia", "related_ids": ["arc-viking-vinland", "civ-byzantium"]},
     "civ-mongol": {"discovered_by": "Genghis Khan (Temüjin) and the Mongol tribes", "related_ids": ["civ-tang", "pan-blackdeath", "civ-ottoman"]},
@@ -195,8 +237,8 @@ DETAILS = {
     # ------- Pandemics -------
     "pan-antonine": {"discovered_by": "Legionaries returning from the Parthian frontier", "related_ids": ["civ-rome"]},
     "pan-justinian": {"discovered_by": "Yersinia pestis on Egyptian grain ships", "related_ids": ["civ-byzantium", "pan-blackdeath"]},
-    "pan-blackdeath": {"discovered_by": "Silk-Road caravans and Genoese ships from Kaffa", "related_ids": ["arc-silkroad-cn-rome", "civ-mongol", "pan-justinian"]},
-    "pan-smallpox-am": {"discovered_by": "Spanish conquistadors and Variola virus", "related_ids": ["arc-columbian-e", "civ-inca", "civ-aztec"]},
+    "pan-blackdeath": {"discovered_by": "Silk-Road caravans and Genoese ships from Kaffa", "related_ids": ["arc-silkroad-cn-rome", "civ-mongol", "pan-justinian", "tech-quarantine"]},
+    "pan-smallpox-am": {"discovered_by": "Spanish conquistadors and Variola virus", "related_ids": ["arc-columbian-e", "civ-inca", "civ-aztec", "tech-vaccine"]},
     "pan-cocoliztli": {"discovered_by": "Post-conquest Salmonella outbreak in New Spain", "related_ids": ["pan-smallpox-am", "civ-aztec"]},
     "pan-cholera": {"discovered_by": "Vibrio cholerae from the Ganges delta", "related_ids": ["arc-columbian-e"]},
     "pan-flu-1918": {"discovered_by": "H1N1 influenza spread by WWI troop movements", "related_ids": ["tech-antibiotic"]},
@@ -230,6 +272,7 @@ RELATED_WHY = {
     "tech-writing": {
         "civ-sumer": "Sumerian temple bureaucrats invented cuneiform specifically to track the city-state's growing trade and tax records.",
         "tech-alphabet": "The Phoenicians simplified cumbersome cuneiform- and hieroglyph-style writing into a compact 22-letter alphabet.",
+        "tech-egyptmed": "Egyptian physicians relied on writing to record and pass down the case studies collected in texts like the Edwin Smith Papyrus.",
         "tech-papermsk": "Cheap paper gave writing a portable, mass-producible surface far beyond clay tablets or papyrus.",
         "tech-print-china": "Movable type mechanized the reproduction of written texts that scribes had previously copied by hand.",
         "tech-gutenberg": "Gutenberg's press automated the same core idea — reproducing written words — at industrial scale in Europe.",
@@ -262,6 +305,7 @@ RELATED_WHY = {
     "tech-upanishads": {
         "tech-buddhism": "The Buddha trained in and ultimately broke from the Vedic/Upanishadic tradition his philosophy was formed against.",
         "tech-confucius": "Both emerged in the same Axial Age wave of systematic philosophical thought spreading independently across Eurasia.",
+        "tech-ayurveda": "Ayurvedic medicine developed within the same Vedic intellectual world that produced the Upanishads.",
         "civ-indus": "The Upanishads grew out of the same Indian subcontinent civilization the earlier Indus Valley culture had inhabited.",
     },
     "tech-torah": {
@@ -349,6 +393,8 @@ RELATED_WHY = {
         "tech-crispr": "CRISPR now lets scientists directly edit the genes behind the antibiotic resistance that penicillin's overuse helped create.",
         "pan-flu-1918": "The 1918 flu killed millions partly through secondary bacterial pneumonia — exactly what antibiotics would later treat.",
         "pan-hiv": "Antibiotics treat the opportunistic infections that HIV/AIDS patients' weakened immune systems become vulnerable to.",
+        "tech-germtheory": "Fleming's discovery only made sense once germ theory had already established that specific microbes, not bad air, cause disease.",
+        "tech-antiseptic": "Antiseptic surgery proved that killing germs saved lives, setting the stage for antibiotics as an internal, systemic version of the same idea.",
     },
     "tech-nuclear": {
         "tech-electric": "The same fission reactions that power atomic weapons also generate electricity in nuclear power plants.",
@@ -407,6 +453,57 @@ RELATED_WHY = {
         "tech-smart": "Smartphones are now the main way billions of people interact with AI assistants daily.",
     },
 
+    # ------- History of medicine -------
+    "tech-egyptmed": {
+        "tech-writing": "Egyptian physicians relied on hieroglyphic writing to record and pass down detailed case studies like those in the Edwin Smith Papyrus.",
+        "civ-egypt": "This systematic medical tradition developed within, and was preserved by, the scribal institutions of ancient Egyptian civilization.",
+        "tech-hippocrates": "Greek physicians including Hippocrates studied Egyptian medical knowledge, one of several traditions his school built on and moved beyond.",
+    },
+    "tech-ayurveda": {
+        "civ-indus": "Ayurvedic medicine developed within the same Indian subcontinent civilization the Indus Valley culture had inhabited centuries earlier.",
+        "tech-upanishads": "Ayurveda grew out of the same Vedic intellectual tradition that produced the Upanishads' philosophy.",
+        "tech-hippocrates": "Sushruta's surgical tradition and Hippocratic medicine arose within a few centuries of each other as independent, parallel foundings of systematic medicine.",
+    },
+    "tech-hippocrates": {
+        "tech-egyptmed": "Greek physicians drew on older Egyptian medical knowledge even as Hippocrates broke sharply from its more ritual elements.",
+        "civ-greece": "Hippocrates and his school taught and practiced on the Greek island of Kos, within the wider world of classical Greek civilization.",
+        "tech-galen": "Roman-era physicians, above all Galen, treated Hippocratic texts as the founding authority of Western medicine.",
+    },
+    "tech-galen": {
+        "tech-hippocrates": "Galen explicitly built his own medical system as a systematic elaboration of Hippocratic principles.",
+        "civ-rome": "Galen practiced in Rome itself, and his writings became the medical authority of the Roman Empire for centuries.",
+        "tech-ibnsina": "Islamic physicians including Ibn Sina translated, preserved, and expanded on Galen's anatomical writings after Rome's fall.",
+    },
+    "tech-ibnsina": {
+        "tech-galen": "Ibn Sina's Canon systematized and built directly on Galen's anatomical and physiological framework.",
+        "civ-islam": "The Canon of Medicine was produced within the Islamic Golden Age's flourishing of translation and scientific scholarship.",
+        "pan-blackdeath": "The Canon's early theory of person-to-person contagion anticipated the public-health thinking the Black Death would later force into practice.",
+    },
+    "tech-quarantine": {
+        "pan-blackdeath": "Ragusa's quarantine law was a direct emergency response to the repeated waves of plague sweeping the Mediterranean.",
+        "tech-ibnsina": "The idea that disease could pass person-to-person, which quarantine assumes, echoed contagion theories already circulating from Ibn Sina's Canon.",
+        "tech-vaccine": "Quarantine and vaccination were the two great pre-germ-theory public-health tools, developed centuries apart to fight the same kinds of epidemics.",
+    },
+    "tech-vaccine": {
+        "pan-smallpox-am": "Jenner's vaccine targeted the very disease, smallpox, that had devastated the Americas three centuries earlier.",
+        "tech-germtheory": "Jenner's vaccine worked decades before germ theory explained why — Pasteur's later work finally revealed the mechanism behind it.",
+        "tech-quarantine": "Vaccination gave doctors a tool that could prevent disease directly, succeeding centuries of quarantine's containment-only approach.",
+    },
+    "tech-anesthesia": {
+        "tech-antiseptic": "Anesthesia and antiseptic technique together, within a generation of each other, turned surgery from a brutal last resort into a controlled science.",
+        "tech-germtheory": "Pain-free surgery under anesthesia created longer, more invasive operations, which made Lister's germ-theory-based antiseptic methods urgently necessary.",
+    },
+    "tech-germtheory": {
+        "tech-antibiotic": "Germ theory's proof that specific microbes cause disease was the conceptual foundation Fleming's antibiotic discovery depended on.",
+        "tech-antiseptic": "Joseph Lister directly applied Pasteur's germ theory to surgery, using carbolic acid to kill the microbes germ theory identified.",
+        "tech-vaccine": "Germ theory retroactively explained, decades later, exactly why Jenner's smallpox vaccine had worked.",
+    },
+    "tech-antiseptic": {
+        "tech-germtheory": "Lister built antiseptic surgery directly on Pasteur's germ theory, translating a laboratory discovery into an operating-room practice.",
+        "tech-anesthesia": "Anesthesia's longer, more complex surgeries made antiseptic technique urgently necessary to prevent fatal post-operative infections.",
+        "tech-antibiotic": "Antiseptic surgery proved that targeting microbes saved lives, foreshadowing the internal, systemic microbe-killing that antibiotics would achieve.",
+    },
+
     # ------- Civilizations -------
     "civ-jericho": {
         "tech-agri": "Jericho's Natufian inhabitants transitioned from foraging to farming, becoming one of history's first agricultural settlements.",
@@ -428,12 +525,14 @@ RELATED_WHY = {
     "civ-egypt": {
         "tech-writing": "Egyptian hieroglyphs developed as one of the world's earliest independent writing systems.",
         "civ-sumer": "Egypt and Sumer developed writing and monumental architecture in parallel, likely influencing each other through trade.",
+        "tech-egyptmed": "Egyptian physicians produced some of the ancient world's most systematic medical and surgical texts, like the Edwin Smith Papyrus.",
         "civ-greece": "Greek scholars and travelers studied Egyptian mathematics, astronomy, and religion extensively.",
         "civ-rome": "Egypt became a prized Roman province after Cleopatra's defeat, feeding the empire with grain.",
     },
     "civ-indus": {
         "tech-agri": "The Indus Valley's advanced irrigation systems supported one of the ancient world's largest farming populations.",
         "civ-sumer": "Harappan merchants traded seals, beads, and goods with Sumer via the Persian Gulf.",
+        "tech-ayurveda": "Ayurvedic medicine grew out of the same Indian subcontinent civilization the Indus Valley culture had inhabited centuries earlier.",
         "civ-xia": "The Indus and early Chinese Xia civilizations both built early Bronze Age urban cultures independently.",
     },
     "civ-xia": {
@@ -450,6 +549,7 @@ RELATED_WHY = {
         "civ-rome": "Rome absorbed enormous amounts of Greek art, philosophy, religion, and political thought.",
         "civ-byzantium": "The Byzantine Empire preserved and continued Greek language, culture, and administration for another thousand years.",
         "tech-greekphil": "Classical Athens was the direct setting where Socrates, Plato, and Aristotle developed Western philosophy.",
+        "tech-hippocrates": "Hippocrates and his school taught on the Greek island of Kos, founding the clinical, non-religious medicine of the classical Greek world.",
     },
     "civ-rome": {
         "civ-greece": "Rome absorbed Greek philosophy, religion, and art wholesale into its own culture.",
@@ -457,6 +557,7 @@ RELATED_WHY = {
         "pan-antonine": "The Antonine Plague struck the Roman Empire at the height of its power, killing millions of citizens.",
         "land-vesuvius": "Vesuvius's eruption buried Roman cities like Pompeii and Herculaneum within the empire's own territory.",
         "tech-christianity": "Christianity spread through Roman roads and trade networks and eventually became the empire's official religion.",
+        "tech-galen": "Galen practiced and wrote in Rome, and his medical writings became the unchallenged authority across the empire for centuries.",
     },
     "civ-han": {
         "civ-xia": "Han dynasty rulers saw themselves as heirs to the same Chinese dynastic lineage beginning with Xia.",
@@ -480,6 +581,7 @@ RELATED_WHY = {
         "civ-mali": "Islam spread into West Africa through trans-Saharan trade routes, reaching the Mali Empire.",
         "civ-ottoman": "The Ottoman Empire later became the dominant power of the Islamic world after the Abbasid Caliphate's decline.",
         "tech-islam": "The Abbasid Caliphate's Golden Age of science and philosophy grew directly out of the faith Muhammad founded.",
+        "tech-ibnsina": "Ibn Sina wrote his Canon of Medicine under the intellectual patronage of the Islamic Golden Age the Abbasid Caliphate sponsored.",
         "tech-zoroaster": "The Caliphate absorbed the scholarly and administrative traditions of the Zoroastrian Persian empire it conquered.",
     },
     "civ-tang": {
@@ -572,11 +674,13 @@ RELATED_WHY = {
         "arc-silkroad-cn-rome": "The Black Death traveled west along the same Silk Road trade routes that connected China to Europe for centuries.",
         "civ-mongol": "Mongol trade and military networks across Eurasia are widely thought to have helped spread the plague westward.",
         "pan-justinian": "The Black Death and the Plague of Justinian were both caused by the same bacterium, Yersinia pestis, centuries apart.",
+        "tech-quarantine": "The Black Death's devastation directly drove Ragusa to invent mandatory quarantine, the first codified public-health response of its kind.",
     },
     "pan-smallpox-am": {
         "arc-columbian-e": "Smallpox was one of the deadliest diseases Europeans introduced to the Americas as part of the Columbian Exchange.",
         "civ-inca": "Smallpox devastated the Inca population, weakening the empire even before Spanish conquistadors fully arrived.",
         "civ-aztec": "Smallpox ravaged Tenochtitlán during the Spanish conquest of the Aztec Empire.",
+        "tech-vaccine": "The same disease that devastated the Americas was, three centuries later, the first to be defeated by vaccination.",
     },
     "pan-cocoliztli": {
         "pan-smallpox-am": "The Cocoliztli epidemics struck in the decades following the initial smallpox outbreak, compounding the population collapse.",
