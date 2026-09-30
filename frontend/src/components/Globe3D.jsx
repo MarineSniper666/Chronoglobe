@@ -17,7 +17,26 @@ export default function Globe3D({
   autoRotate,
 }) {
   const globeRef = useRef();
+  const containerRef = useRef();
+  // react-globe.gl sizes itself to window.innerWidth/innerHeight unless told
+  // otherwise -- it does not observe its own parent element. That's invisible
+  // in normal mode (the container IS the full window), but in Compare mode
+  // each globe sits in a 50%-wide flex pane, and without explicit width/height
+  // both globes render at full window size and overlap, hiding one behind
+  // the other. Measuring our own wrapper with ResizeObserver fixes both
+  // Compare mode and ordinary window resizing.
+  const [dims, setDims] = useState({ width: 0, height: 0 });
   const [countries, setCountries] = useState([]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const measure = () => setDims({ width: el.clientWidth, height: el.clientHeight });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     fetch(COUNTRIES_URL)
@@ -93,9 +112,11 @@ export default function Globe3D({
   );
 
   return (
-    <div className="absolute inset-0" data-testid="globe-3d">
+    <div ref={containerRef} className="absolute inset-0" data-testid="globe-3d">
       <Globe
         ref={globeRef}
+        width={dims.width || undefined}
+        height={dims.height || undefined}
         globeImageUrl={GLOBE_TEXTURE}
         bumpImageUrl={BUMP_TEXTURE}
         backgroundColor="rgba(0,0,0,0)"
