@@ -30,7 +30,7 @@ DETAILS = {
     },
     "tech-wheel": {
         "discovered_by": "Late Neolithic Mesopotamian potters and steppe pastoralists",
-        "related_ids": ["tech-agri", "civ-sumer", "tech-bronze"],
+        "related_ids": ["tech-agri", "civ-sumer", "tech-bronze", "civ-lang-pie"],
     },
     "tech-bronze": {
         "discovered_by": "Metallurgists of Sumer, Anatolia, and the Aegean",
@@ -42,7 +42,7 @@ DETAILS = {
     },
     "tech-alphabet": {
         "discovered_by": "Phoenician traders of the Levantine coast",
-        "related_ids": ["tech-writing", "civ-greece", "civ-rome"],
+        "related_ids": ["tech-writing", "civ-greece", "civ-rome", "civ-lang-latin", "civ-lang-arabic"],
     },
     "tech-zoroaster": {
         "discovered_by": "Zoroaster (Zarathustra) in ancient Persia",
@@ -50,7 +50,7 @@ DETAILS = {
     },
     "tech-upanishads": {
         "discovered_by": "Vedic sages and philosophers of ancient India",
-        "related_ids": ["tech-buddhism", "tech-confucius", "civ-indus", "tech-ayurveda"],
+        "related_ids": ["tech-buddhism", "tech-confucius", "civ-indus", "tech-ayurveda", "civ-lang-sanskrit"],
     },
     "tech-torah": {
         "discovered_by": "Jewish scribes during and after the Babylonian exile",
@@ -74,11 +74,11 @@ DETAILS = {
     },
     "tech-islam": {
         "discovered_by": "The Prophet Muhammad and the early Muslim ummah",
-        "related_ids": ["tech-torah", "tech-christianity", "civ-islam", "tech-zoroaster"],
+        "related_ids": ["tech-torah", "tech-christianity", "civ-islam", "tech-zoroaster", "civ-lang-arabic"],
     },
     "tech-papermsk": {
         "discovered_by": "Cai Lun, official at the Han imperial court",
-        "related_ids": ["tech-writing", "tech-print-china", "tech-gutenberg", "civ-han"],
+        "related_ids": ["tech-writing", "tech-print-china", "tech-gutenberg", "civ-han", "civ-lang-chinese"],
     },
     "tech-gunpowder": {
         "discovered_by": "Daoist alchemists of Tang-era China",
@@ -212,24 +212,66 @@ DETAILS = {
     "civ-catalhoyuk": {"discovered_by": "Neolithic Anatolian farmers", "related_ids": ["tech-agri", "tech-pottery", "civ-jericho"]},
     "civ-sumer": {"discovered_by": "Sumerian city-states of southern Mesopotamia", "related_ids": ["tech-writing", "tech-wheel", "tech-bronze", "civ-egypt", "civ-indus"]},
     "civ-egypt": {"discovered_by": "King Narmer, unifying Upper and Lower Egypt", "related_ids": ["tech-writing", "civ-sumer", "civ-greece", "civ-rome", "tech-egyptmed"]},
-    "civ-indus": {"discovered_by": "Harappan urbanists of the Indus and Sarasvati valleys", "related_ids": ["tech-agri", "civ-sumer", "civ-xia", "tech-ayurveda"]},
-    "civ-xia": {"discovered_by": "Erlitou culture along the Yellow River", "related_ids": ["tech-bronze", "civ-han", "civ-tang"]},
+    "civ-indus": {"discovered_by": "Harappan urbanists of the Indus and Sarasvati valleys", "related_ids": ["tech-agri", "civ-sumer", "civ-xia", "tech-ayurveda", "civ-lang-sanskrit"]},
+    "civ-xia": {"discovered_by": "Erlitou culture along the Yellow River", "related_ids": ["tech-bronze", "civ-han", "civ-tang", "civ-lang-chinese"]},
     "civ-olmec": {"discovered_by": "Olmec heartland peoples of the Gulf coast", "related_ids": ["civ-maya", "civ-aztec"]},
     "civ-greece": {"discovered_by": "Cleisthenes and the Athenian demos", "related_ids": ["tech-alphabet", "civ-rome", "civ-byzantium", "tech-greekphil", "tech-hippocrates"]},
-    "civ-rome": {"discovered_by": "Augustus (Octavian), first princeps of Rome", "related_ids": ["civ-greece", "civ-byzantium", "pan-antonine", "land-vesuvius", "tech-christianity", "tech-galen"]},
-    "civ-han": {"discovered_by": "Emperor Wu of Han and the Silk Road merchants", "related_ids": ["civ-xia", "tech-papermsk", "civ-tang", "tech-confucius", "tech-buddhism"]},
+    "civ-rome": {"discovered_by": "Augustus (Octavian), first princeps of Rome", "related_ids": ["civ-greece", "civ-byzantium", "pan-antonine", "land-vesuvius", "tech-christianity", "tech-galen", "civ-lang-latin"]},
+    "civ-han": {"discovered_by": "Emperor Wu of Han and the Silk Road merchants", "related_ids": ["civ-xia", "tech-papermsk", "civ-tang", "tech-confucius", "tech-buddhism", "civ-lang-chinese"]},
     "civ-maya": {"discovered_by": "Classic Maya city-states (Tikal, Palenque, Copán)", "related_ids": ["civ-olmec", "civ-aztec"]},
     "civ-byzantium": {"discovered_by": "Justinian I and the Eastern Roman court", "related_ids": ["civ-rome", "pan-justinian", "civ-ottoman"]},
-    "civ-islam": {"discovered_by": "The Abbasid Caliphate and the House of Wisdom scholars", "related_ids": ["tech-papermsk", "civ-byzantium", "civ-mali", "civ-ottoman", "tech-islam", "tech-zoroaster", "tech-ibnsina"]},
+    "civ-islam": {"discovered_by": "The Abbasid Caliphate and the House of Wisdom scholars", "related_ids": ["tech-papermsk", "civ-byzantium", "civ-mali", "civ-ottoman", "tech-islam", "tech-zoroaster", "tech-ibnsina", "civ-lang-arabic"]},
     "civ-tang": {"discovered_by": "Tang emperors ruling from Chang'an", "related_ids": ["civ-han", "tech-gunpowder", "tech-print-china", "tech-buddhism"]},
     "civ-vikings": {"discovered_by": "Norse seafarers of Scandinavia", "related_ids": ["arc-viking-vinland", "civ-byzantium"]},
     "civ-mongol": {"discovered_by": "Genghis Khan (Temüjin) and the Mongol tribes", "related_ids": ["civ-tang", "pan-blackdeath", "civ-ottoman"]},
     "civ-mali": {"discovered_by": "Mansa Musa I and the Mandé peoples", "related_ids": ["civ-islam", "arc-slave-trade"]},
-    "civ-inca": {"discovered_by": "Pachacuti and the Quechua-speaking Andean peoples", "related_ids": ["civ-aztec", "pan-smallpox-am", "arc-columbian-e"]},
-    "civ-aztec": {"discovered_by": "Mexica of Tenochtitlán and the Triple Alliance", "related_ids": ["civ-maya", "civ-olmec", "pan-smallpox-am", "pan-cocoliztli"]},
+    "civ-inca": {"discovered_by": "Pachacuti and the Quechua-speaking Andean peoples", "related_ids": ["civ-aztec", "pan-smallpox-am", "arc-columbian-e", "civ-lang-spanish"]},
+    "civ-aztec": {"discovered_by": "Mexica of Tenochtitlán and the Triple Alliance", "related_ids": ["civ-maya", "civ-olmec", "pan-smallpox-am", "pan-cocoliztli", "civ-lang-spanish"]},
     "civ-ottoman": {"discovered_by": "Mehmed II 'the Conqueror' and the Ottoman dynasty", "related_ids": ["civ-byzantium", "civ-islam", "tech-gunpowder"]},
-    "civ-usa": {"discovered_by": "The Second Continental Congress in Philadelphia", "related_ids": ["tech-steam", "tech-flight", "tech-moon", "tech-internet", "tech-enlightenment"]},
-    "civ-ussr": {"discovered_by": "The Bolsheviks led by Vladimir Lenin", "related_ids": ["tech-space", "tech-nuclear"]},
+    "civ-usa": {"discovered_by": "The Second Continental Congress in Philadelphia", "related_ids": ["tech-steam", "tech-flight", "tech-moon", "tech-internet", "tech-enlightenment", "civ-lang-english"]},
+    "civ-ussr": {"discovered_by": "The Bolsheviks led by Vladimir Lenin", "related_ids": ["tech-space", "tech-nuclear", "civ-lang-slavic"]},
+
+    # ------- Civilizations subset: Languages -------
+    "civ-lang-pie": {
+        "discovered_by": "Yamnaya pastoralists of the Pontic-Caspian steppe",
+        "related_ids": ["tech-wheel", "civ-lang-latin", "civ-lang-slavic", "civ-lang-english"],
+    },
+    "civ-lang-austronesian": {
+        "discovered_by": "Neolithic farmers of Taiwan",
+        "related_ids": ["civ-lang-bantu", "civ-lang-pie"],
+    },
+    "civ-lang-bantu": {
+        "discovered_by": "Proto-Bantu-speaking farming communities of the Nigeria-Cameroon borderlands",
+        "related_ids": ["civ-lang-austronesian", "civ-lang-pie"],
+    },
+    "civ-lang-sanskrit": {
+        "discovered_by": "Panini, grammarian of ancient India",
+        "related_ids": ["tech-upanishads", "civ-lang-pie", "civ-indus"],
+    },
+    "civ-lang-latin": {
+        "discovered_by": "The Roman Republic and Empire",
+        "related_ids": ["civ-rome", "civ-lang-pie", "tech-alphabet", "civ-lang-spanish"],
+    },
+    "civ-lang-chinese": {
+        "discovered_by": "Qin Shi Huang, first emperor of unified China",
+        "related_ids": ["civ-xia", "civ-han", "tech-papermsk"],
+    },
+    "civ-lang-slavic": {
+        "discovered_by": "Early Slavic-speaking peoples of the Pripyat Marshes",
+        "related_ids": ["civ-lang-pie", "civ-ussr"],
+    },
+    "civ-lang-arabic": {
+        "discovered_by": "Arab armies and administrators of the early Islamic conquests",
+        "related_ids": ["tech-islam", "civ-islam", "tech-alphabet"],
+    },
+    "civ-lang-spanish": {
+        "discovered_by": "The Spanish Crown and its colonial administration",
+        "related_ids": ["civ-lang-latin", "civ-aztec", "civ-inca"],
+    },
+    "civ-lang-english": {
+        "discovered_by": "England's maritime traders and, later, the British Empire",
+        "related_ids": ["civ-lang-pie", "civ-usa"],
+    },
 
     # ------- Land transformations -------
     "land-bering": {"discovered_by": "Ancient Beringians / Paleo-Indian founder populations", "related_ids": ["arc-beringia", "civ-olmec", "civ-maya", "civ-inca", "civ-aztec"]},
@@ -291,6 +333,7 @@ RELATED_WHY = {
         "tech-agri": "Wheeled carts let farmers haul harvests and irrigation materials far more efficiently than by hand or sled.",
         "civ-sumer": "Sumerians paired the wheel with draft animals to build the first wheeled transport and war chariots.",
         "tech-bronze": "Bronze fittings made wheels stronger and more durable than wood alone.",
+        "civ-lang-pie": "Wheeled wagons gave Yamnaya pastoralists the mobility that carried Proto-Indo-European across an enormous stretch of Eurasia.",
     },
     "tech-bronze": {
         "tech-fire": "Alloying copper and tin into bronze required furnace heat well beyond a simple cooking fire.",
@@ -306,6 +349,8 @@ RELATED_WHY = {
         "tech-writing": "The Phoenician alphabet descended directly from earlier writing systems, stripped down for speed and trade.",
         "civ-greece": "The Greeks adapted the Phoenician alphabet, adding vowels to create the first true alphabet.",
         "civ-rome": "Rome inherited its Latin alphabet from the Greek adaptation of Phoenician letters.",
+        "civ-lang-latin": "The Latin alphabet is a direct descendant of the Greek adaptation of this same Phoenician alphabet.",
+        "civ-lang-arabic": "The Arabic script, like Latin's, ultimately descends from the same family of alphabets the Phoenicians spread across the Mediterranean and Near East.",
     },
     "tech-zoroaster": {
         "tech-torah": "Zoroastrian ideas about a single supreme god and cosmic judgment likely influenced Jewish theology during the Babylonian exile.",
@@ -316,6 +361,7 @@ RELATED_WHY = {
         "tech-buddhism": "The Buddha trained in and ultimately broke from the Vedic/Upanishadic tradition his philosophy was formed against.",
         "tech-confucius": "Both emerged in the same Axial Age wave of systematic philosophical thought spreading independently across Eurasia.",
         "tech-ayurveda": "Ayurvedic medicine developed within the same Vedic intellectual world that produced the Upanishads.",
+        "civ-lang-sanskrit": "The Upanishads were composed and transmitted in Sanskrit, the very language Panini's grammar would later codify.",
         "civ-indus": "The Upanishads grew out of the same Indian subcontinent civilization the earlier Indus Valley culture had inhabited.",
     },
     "tech-torah": {
@@ -348,11 +394,13 @@ RELATED_WHY = {
         "tech-christianity": "Islam and Christianity both trace their roots to the same Abrahamic tradition and revere many of the same figures.",
         "civ-islam": "The Abbasid Caliphate's Golden Age of science and philosophy grew directly out of the faith Muhammad founded.",
         "tech-zoroaster": "Muslim armies conquered Zoroastrian Persia within decades of Islam's founding, absorbing its scholars and institutions.",
+        "civ-lang-arabic": "Arabic is the language the Quran was revealed in, and Islam's spread across the Middle East and North Africa carried the language with it.",
     },
     "tech-papermsk": {
         "tech-writing": "Paper gave the written word a cheap, lightweight surface to replace bulky bamboo strips and silk.",
         "tech-print-china": "Bi Sheng's movable type was only practical once cheap paper existed to print onto.",
         "tech-gutenberg": "Papermaking techniques eventually reached Europe, supplying the material Gutenberg's press needed to work at scale.",
+        "civ-lang-chinese": "A single unified script made China's later invention of cheap paper far more powerful, since one writing system could now reach a much larger literate population.",
         "civ-han": "Cai Lun refined papermaking as an official at the Han imperial court.",
     },
     "tech-gunpowder": {
@@ -555,11 +603,13 @@ RELATED_WHY = {
         "civ-sumer": "Harappan merchants traded seals, beads, and goods with Sumer via the Persian Gulf.",
         "tech-ayurveda": "Ayurvedic medicine grew out of the same Indian subcontinent civilization the Indus Valley culture had inhabited centuries earlier.",
         "civ-xia": "The Indus and early Chinese Xia civilizations both built early Bronze Age urban cultures independently.",
+        "civ-lang-sanskrit": "Sanskrit and Vedic culture took root in the same South Asian civilizational space the Indus Valley culture had occupied centuries earlier.",
     },
     "civ-xia": {
         "tech-bronze": "Xia-era Erlitou culture produced some of China's earliest bronze ritual vessels and weapons.",
         "civ-han": "Xia is traditionally regarded as the first dynasty in the lineage that leads to Han China.",
         "civ-tang": "The dynastic model Xia began was carried forward, through many dynasties, into Tang China.",
+        "civ-lang-chinese": "Qin Shi Huang's script unification stood on top of nearly two millennia of Chinese dynastic tradition beginning with Xia.",
     },
     "civ-olmec": {
         "civ-maya": "The Olmecs are considered Mesoamerica's 'mother culture,' whose calendar and religious ideas the Maya inherited.",
@@ -579,6 +629,7 @@ RELATED_WHY = {
         "land-vesuvius": "Vesuvius's eruption buried Roman cities like Pompeii and Herculaneum within the empire's own territory.",
         "tech-christianity": "Christianity spread through Roman roads and trade networks and eventually became the empire's official religion.",
         "tech-galen": "Galen practiced and wrote in Rome, and his medical writings became the unchallenged authority across the empire for centuries.",
+        "civ-lang-latin": "Latin was Rome's own language, spread across the empire by its legions, administrators, and roads.",
     },
     "civ-han": {
         "civ-xia": "Han dynasty rulers saw themselves as heirs to the same Chinese dynastic lineage beginning with Xia.",
@@ -586,6 +637,7 @@ RELATED_WHY = {
         "civ-tang": "Han China set the administrative and cultural template that later Tang China would build upon.",
         "tech-confucius": "Han emperors adopted Confucianism as the empire's official state philosophy.",
         "tech-buddhism": "Buddhism first entered China from India during the Han dynasty via Silk Road trade routes.",
+        "civ-lang-chinese": "Han China inherited and cemented the unified script Qin Shi Huang had imposed just before it, making it the enduring basis of Chinese writing.",
     },
     "civ-maya": {
         "civ-olmec": "Maya civilization inherited its calendar system and religious iconography from the earlier Olmec culture.",
@@ -604,6 +656,7 @@ RELATED_WHY = {
         "tech-islam": "The Abbasid Caliphate's Golden Age of science and philosophy grew directly out of the faith Muhammad founded.",
         "tech-ibnsina": "Ibn Sina wrote his Canon of Medicine under the intellectual patronage of the Islamic Golden Age the Abbasid Caliphate sponsored.",
         "tech-zoroaster": "The Caliphate absorbed the scholarly and administrative traditions of the Zoroastrian Persian empire it conquered.",
+        "civ-lang-arabic": "Arabic was the Abbasid Caliphate's administrative and scholarly language, carried across its territory along with the faith itself.",
     },
     "civ-tang": {
         "civ-han": "Tang China inherited and expanded on the administrative and cultural foundations Han China had built centuries earlier.",
@@ -628,12 +681,14 @@ RELATED_WHY = {
         "civ-aztec": "The Inca and Aztec empires were the two largest Indigenous American civilizations when Europeans arrived.",
         "pan-smallpox-am": "Smallpox, introduced by Europeans, devastated the Inca population even before Spanish conquistadors fully arrived.",
         "arc-columbian-e": "The Inca Empire was permanently transformed by the biological and material exchange the Columbian Exchange triggered.",
+        "civ-lang-spanish": "Spanish became the dominant language across the former Inca Empire following Spanish colonization of the Andes.",
     },
     "civ-aztec": {
         "civ-maya": "The Aztecs inherited calendar systems and religious concepts from the earlier Maya civilization.",
         "civ-olmec": "Aztec cosmology traced its symbolic and religious roots back to the ancient Olmec 'mother culture.'",
         "pan-smallpox-am": "Smallpox devastated the Aztec population during the Spanish conquest of Tenochtitlán.",
         "pan-cocoliztli": "The Cocoliztli epidemics struck Aztec territory in the decades following the initial conquest and smallpox outbreak.",
+        "civ-lang-spanish": "Spanish became the dominant language of former Aztec territory in the wake of the conquest of Tenochtitlán.",
     },
     "civ-ottoman": {
         "civ-byzantium": "The Ottomans conquered Constantinople in 1453, ending the Byzantine Empire and inheriting its capital.",
@@ -646,10 +701,62 @@ RELATED_WHY = {
         "tech-moon": "NASA's Apollo program was a US government effort that put the first humans on the Moon.",
         "tech-internet": "ARPANET, the internet's direct ancestor, was built by US Department of Defense-funded researchers.",
         "tech-enlightenment": "The Declaration of Independence and US Constitution were built directly on Enlightenment political philosophy.",
+        "civ-lang-english": "American economic, technological, and cultural dominance in the 20th century is what finally cemented English as the world's lingua franca.",
     },
     "civ-ussr": {
         "tech-space": "The Soviet space program launched Sputnik, humanity's first artificial satellite.",
         "tech-nuclear": "The USSR's 1949 atomic bomb test made it the world's second nuclear power, defining the Cold War.",
+        "civ-lang-slavic": "Russian, the USSR's dominant language, is one of the many daughter languages that emerged from the Slavic migrations centuries earlier.",
+    },
+
+    # ------- Civilizations subset: Languages -------
+    "civ-lang-pie": {
+        "tech-wheel": "Wheeled wagons gave Yamnaya pastoralists the mobility to carry Proto-Indo-European across an enormous stretch of Eurasia.",
+        "civ-lang-latin": "Latin is one of the many daughter languages Proto-Indo-European split into as its speakers spread and separated.",
+        "civ-lang-slavic": "The Slavic languages are another of Proto-Indo-European's many daughter branches, diverging in a different direction and era.",
+        "civ-lang-english": "English descends from Proto-Indo-European's Germanic branch, one of the many lines that fractured off over the millennia.",
+    },
+    "civ-lang-austronesian": {
+        "civ-lang-bantu": "Austronesian and Bantu are history's two other great examples of a single farming population's language splitting into hundreds of descendants as it spread.",
+        "civ-lang-pie": "Austronesian, Bantu, and Proto-Indo-European are the three largest known cases of one ancestral language diverging into a whole language family.",
+    },
+    "civ-lang-bantu": {
+        "civ-lang-austronesian": "Bantu and Austronesian both show farming populations carrying one language over vast distances, then fragmenting linguistically as they spread.",
+        "civ-lang-pie": "Bantu's expansion mirrors Proto-Indo-European's on a different continent: one language, carried by migrating farmers, splitting into hundreds of descendants.",
+    },
+    "civ-lang-sanskrit": {
+        "tech-upanishads": "The Upanishads were composed and transmitted in Sanskrit, the language Panini's grammar would later codify.",
+        "civ-lang-pie": "Sanskrit is itself a daughter language of Proto-Indo-European, carried into South Asia by Indo-Aryan migrations.",
+        "civ-indus": "Sanskrit and its Vedic culture took root in the same South Asian civilizational space the Indus Valley culture had occupied earlier.",
+    },
+    "civ-lang-latin": {
+        "civ-rome": "Latin was Rome's own language, spread everywhere Roman roads, legions, and administration reached.",
+        "civ-lang-pie": "Latin descends from Proto-Indo-European's Italic branch, one of the family's many daughter lines.",
+        "tech-alphabet": "The Latin alphabet is a direct descendant of the Greek adaptation of the Phoenician alphabet.",
+        "civ-lang-spanish": "Spanish is one of the Romance languages that emerged when spoken Latin fragmented after Rome's collapse.",
+    },
+    "civ-lang-chinese": {
+        "civ-xia": "Qin Shi Huang's unification stood on top of two millennia of Chinese dynastic tradition beginning with Xia.",
+        "civ-han": "The unified script Qin imposed is the same writing system Han China inherited and cemented as the basis of Chinese civilization.",
+        "tech-papermsk": "A unified script made China's later invention of cheap paper far more powerful, since one writing system could now reach a much larger literate population.",
+    },
+    "civ-lang-slavic": {
+        "civ-lang-pie": "Slavic is one of Proto-Indo-European's daughter branches, diverging from other Indo-European languages over thousands of years.",
+        "civ-ussr": "Russian, the dominant Slavic language of the 20th century, gave the Soviet Union its administrative and literary language.",
+    },
+    "civ-lang-arabic": {
+        "tech-islam": "Arabic is the language the Quran was revealed in, and Islam's spread is inseparable from Arabic's spread.",
+        "civ-islam": "The Abbasid Caliphate's scholarship, translation movement, and administration were all conducted in Arabic.",
+        "tech-alphabet": "The Arabic script, like Latin's, ultimately descends from the same family of alphabets the Phoenicians spread across the Mediterranean and Near East.",
+    },
+    "civ-lang-spanish": {
+        "civ-lang-latin": "Spanish is one of the Romance languages, a direct descendant of the spoken Latin that fragmented after Rome fell.",
+        "civ-aztec": "Spanish became the dominant language of former Aztec territory following the Spanish conquest of Tenochtitlán.",
+        "civ-inca": "Spanish became the dominant language across the former Inca Empire following Spanish colonization of the Andes.",
+    },
+    "civ-lang-english": {
+        "civ-lang-pie": "English descends from Proto-Indo-European's Germanic branch, carried to Britain by Anglo-Saxon migrations.",
+        "civ-usa": "American economic, technological, and cultural dominance in the 20th century is what finally made English a truly global language.",
     },
 
     # ------- Land transformations -------

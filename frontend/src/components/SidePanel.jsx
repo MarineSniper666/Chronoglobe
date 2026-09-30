@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Sparkles, MapPin, Volume2, Pause, Users, GitBranch, Star } from 'lucide-react';
-import { CATEGORIES, TECH_SUBTYPES, formatYear } from '../lib/history';
+import { CATEGORIES, CATEGORY_SUBTYPES, formatYear } from '../lib/history';
 import { isBookmarked, addBookmark, removeBookmark } from '../lib/bookmarks';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -142,7 +142,10 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
       return;
     }
 
-    const cleanText = aiText.replace(/\*\*/g, '').replace(/[#*_`]/g, '');
+    // Strip literal "\n" escape sequences (see the /api/expand streaming
+    // fix) in addition to markdown symbols, so the narrator never reads
+    // stray backslash-n characters out loud.
+    const cleanText = aiText.replace(/\\n/g, ' ').replace(/\*\*/g, '').replace(/[#*_`]/g, '');
     const utterance = new SpeechSynthesisUtterance(cleanText);
     const chosen = pickVoice(synth.getVoices(), voice === 'onyx' ? 'male' : 'female');
     if (chosen) utterance.voice = chosen;
@@ -224,8 +227,8 @@ export default function SidePanel({ event, allEvents = [], onClose, onOpenRelate
             <span className={`inline-block w-2 h-2 rounded-full ${cat.dot}`} />
             <span className="font-mono-x text-[10px] uppercase tracking-[0.25em] text-white/60">
               {cat.label}
-              {event.subtype && TECH_SUBTYPES[event.subtype] && (
-                <span className="text-white/35"> · {TECH_SUBTYPES[event.subtype]}</span>
+              {event.subtype && CATEGORY_SUBTYPES[event.category]?.[event.subtype] && (
+                <span className="text-white/35"> · {CATEGORY_SUBTYPES[event.category][event.subtype]}</span>
               )}
             </span>
           </div>

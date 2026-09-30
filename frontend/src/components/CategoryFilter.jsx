@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { CATEGORIES, TECH_SUBTYPES } from '../lib/history';
+import { CATEGORIES, CATEGORY_SUBTYPES, SUBTYPE_ACCENT } from '../lib/history';
 
 export default function CategoryFilter({ active, onToggle, onToggleSubtype }) {
-  const [expanded, setExpanded] = useState(false);
+  // Independent expand/collapse state per category, since more than one
+  // category (Technology, Civilizations, ...) can have a sub-filter list.
+  const [expanded, setExpanded] = useState({});
 
   return (
     <div
@@ -16,7 +18,10 @@ export default function CategoryFilter({ active, onToggle, onToggleSubtype }) {
       <div className="flex flex-col gap-2">
         {Object.entries(CATEGORIES).map(([key, cat]) => {
           const isOn = active[key];
-          const hasSubtypes = key === 'technology';
+          const subtypes = CATEGORY_SUBTYPES[key];
+          const hasSubtypes = !!subtypes && Object.keys(subtypes).length > 0;
+          const isExpanded = !!expanded[key];
+          const accent = SUBTYPE_ACCENT[key] || cat.color;
           return (
             <div key={key}>
               <button
@@ -33,32 +38,36 @@ export default function CategoryFilter({ active, onToggle, onToggleSubtype }) {
                   <span
                     role="button"
                     tabIndex={0}
-                    onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
+                    onClick={(e) => { e.stopPropagation(); setExpanded((v) => ({ ...v, [key]: !v[key] })); }}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setExpanded((v) => !v); }
+                      if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setExpanded((v) => ({ ...v, [key]: !v[key] })); }
                     }}
-                    aria-label={expanded ? 'Collapse Technology subtypes' : 'Expand Technology subtypes'}
-                    data-testid="filter-technology-expand"
+                    aria-label={isExpanded ? `Collapse ${cat.label} subtypes` : `Expand ${cat.label} subtypes`}
+                    data-testid={`filter-${key}-expand`}
                     className="text-white/40 hover:text-white/80 p-0.5 -mr-1"
                   >
-                    {expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                    {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                   </span>
                 )}
               </button>
 
-              {hasSubtypes && expanded && (
+              {hasSubtypes && isExpanded && (
                 <div className="ml-5 mt-1 mb-1 flex flex-col gap-0.5 border-l border-white/10 pl-3">
-                  {Object.entries(TECH_SUBTYPES).map(([subKey, subLabel]) => {
-                    const subOn = active.techSubtypes ? active.techSubtypes[subKey] !== false : true;
+                  {Object.entries(subtypes).map(([subKey, subLabel]) => {
+                    const categorySubs = active.subtypesByCategory?.[key];
+                    const subOn = categorySubs ? categorySubs[subKey] !== false : true;
                     return (
                       <button
                         key={subKey}
-                        onClick={() => onToggleSubtype(subKey)}
-                        data-testid={`filter-tech-${subKey}`}
+                        onClick={() => onToggleSubtype(key, subKey)}
+                        data-testid={`filter-${key}-${subKey}`}
                         className={`flex items-center gap-2 px-2 py-1 rounded-md transition-colors duration-200 hover:bg-white/5
                           ${subOn ? 'text-white/70' : 'text-white/30'}`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${subOn ? 'bg-[#4682B4]' : 'bg-white/15'}`} />
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: subOn ? accent : 'rgba(255,255,255,0.15)' }}
+                        />
                         <span className={`font-mono-x text-[10px] uppercase tracking-[0.1em] text-left flex-1 ${subOn ? '' : 'line-through'}`}>
                           {subLabel}
                         </span>

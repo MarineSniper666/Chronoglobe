@@ -147,6 +147,51 @@ EVENTS = [
      "summary": "Bolsheviks seize power, establishing the world's first communist state and reshaping 20th-century geopolitics.",
      "source": "Russian State Archives"},
 
+    # -------------------------
+    # Civilizations subset: Languages (divergence: one language becomes
+    # many; standardization: a civilization spreads/imposes one language)
+    # -------------------------
+    {"id": "civ-lang-pie", "title": "Proto-Indo-European Spreads & Splits", "year": -4000,
+     "lat": 48.0, "lng": 45.0, "category": "civilizations", "subtype": "languages", "region": "Pontic-Caspian Steppe",
+     "summary": "The Yamnaya culture of the Pontic-Caspian steppe speaks Proto-Indo-European, a single language that horses and wheeled wagons carry across Europe and Asia. Over the following millennia it fragments into the ancestor of English, Spanish, Hindi, Russian, Persian, Greek, and hundreds of other languages spoken by nearly half of humanity today.",
+     "source": "Britannica"},
+    {"id": "civ-lang-austronesian", "title": "Austronesian Expansion Begins", "year": -3000,
+     "lat": 23.7, "lng": 121.0, "category": "civilizations", "subtype": "languages", "region": "Taiwan",
+     "summary": "Farmers from Taiwan begin a maritime expansion across the Pacific and Indian Oceans, carrying a single ancestral language that eventually diverges into over 1,200 Austronesian languages spoken from Madagascar to Easter Island — one of history's largest linguistic expansions.",
+     "source": "World History Encyclopedia"},
+    {"id": "civ-lang-bantu", "title": "Bantu Expansion Begins", "year": -1500,
+     "lat": 7.0, "lng": 10.0, "category": "civilizations", "subtype": "languages", "region": "West/Central Africa",
+     "summary": "Farming communities speaking a single proto-Bantu language begin migrating south and east from the Nigeria-Cameroon borderlands. Over two millennia the language diverges into more than 500 distinct Bantu languages spoken across Sub-Saharan Africa today.",
+     "source": "World History Encyclopedia"},
+    {"id": "civ-lang-sanskrit", "title": "Sanskrit Codified (Panini's Grammar)", "year": -500,
+     "lat": 33.75, "lng": 72.83, "category": "civilizations", "subtype": "languages", "region": "Ancient India",
+     "summary": "The grammarian Panini codifies Sanskrit's rules with such precision that his Ashtadhyayi remains a foundational text of linguistics. Sanskrit becomes the standardized liturgical and scholarly language across the Indian subcontinent for over a millennium.",
+     "source": "Britannica"},
+    {"id": "civ-lang-chinese", "title": "Chinese Script Unified", "year": -221,
+     "lat": 34.3, "lng": 108.9, "category": "civilizations", "subtype": "languages", "region": "China",
+     "summary": "Having just unified China by conquest, Qin Shi Huang standardizes weights, measures, and — most enduringly — the written script, binding together mutually unintelligible spoken dialects under one shared writing system that still unifies China linguistically today.",
+     "source": "World History Encyclopedia"},
+    {"id": "civ-lang-latin", "title": "Latin Standardized & Spreads", "year": -100,
+     "lat": 41.9, "lng": 12.5, "category": "civilizations", "subtype": "languages", "region": "Roman Empire",
+     "summary": "Roman conquest and administration spread Latin from Iberia to the Levant. After the Western Empire's collapse, regional dialects of spoken Latin drift apart in isolation, eventually becoming French, Spanish, Italian, Portuguese, and Romanian.",
+     "source": "Britannica"},
+    {"id": "civ-lang-slavic", "title": "Slavic Languages Diverge", "year": 600,
+     "lat": 51.4, "lng": 26.0, "category": "civilizations", "subtype": "languages", "region": "Eastern Europe",
+     "summary": "As Slavic-speaking peoples migrate out of the Pripyat Marshes across Eastern and Southeastern Europe, their once-unified language diverges into the ancestors of Russian, Polish, Czech, Serbian, Bulgarian, and a dozen other modern Slavic languages.",
+     "source": "Britannica"},
+    {"id": "civ-lang-arabic", "title": "Arabic Spreads via Islamic Conquests", "year": 700,
+     "lat": 24.47, "lng": 39.61, "category": "civilizations", "subtype": "languages", "region": "Middle East/North Africa",
+     "summary": "Islam's rapid military and religious expansion carries Arabic from the Arabian Peninsula across the Middle East and North Africa, permanently displacing or absorbing Coptic, Aramaic, and Berber as the region's dominant administrative and literary language.",
+     "source": "World History Encyclopedia"},
+    {"id": "civ-lang-spanish", "title": "Spanish Spreads to the Americas", "year": 1500,
+     "lat": 40.4, "lng": -3.7, "category": "civilizations", "subtype": "languages", "region": "Spain/Americas",
+     "summary": "Spanish colonization carries Castilian Spanish across the Americas, where it becomes the dominant language of nearly 20 countries — a transplantation on the same scale as Rome's spread of Latin, achieved in a fraction of the time via ship instead of road.",
+     "source": "Britannica"},
+    {"id": "civ-lang-english", "title": "English Becomes a Global Language", "year": 1600,
+     "lat": 51.51, "lng": -0.11, "category": "civilizations", "subtype": "languages", "region": "England",
+     "summary": "English begins its journey from an island language spoken by a few million people to the modern era's global lingua franca, carried first by British colonization and maritime trade, later cemented by American economic, technological, and cultural dominance.",
+     "source": "Britannica"},
+
     # =========================
     # PANDEMICS
     # =========================

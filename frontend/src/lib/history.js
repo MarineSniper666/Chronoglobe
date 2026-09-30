@@ -19,6 +19,28 @@ export const TECH_SUBTYPES = {
   'future-science': 'Future Science',
 };
 
+// Subtypes within the Civilizations category.
+export const CIV_SUBTYPES = {
+  languages: 'Languages',
+};
+
+// Maps a category key to its subtypes object (if any), so the Layers panel
+// and side-panel label lookup work the same way for every category instead
+// of special-casing Technology. A category with no entry here has no
+// sub-filter.
+export const CATEGORY_SUBTYPES = {
+  technology: TECH_SUBTYPES,
+  civilizations: CIV_SUBTYPES,
+};
+
+// Accent color for a category's subtype dots in the Layers panel -- a
+// distinct, slightly lighter tone nested under the category's own color so
+// the sub-filter list reads as "part of" that category, not a new one.
+export const SUBTYPE_ACCENT = {
+  technology: '#4682B4',
+  civilizations: '#B9A0DE',
+};
+
 // Macro eras (top-level jumps)
 export const ERAS = [
   { id: 'prehistoric', name: 'Prehistoric', jumpTo: -25000, range: [-500000, -3500] },

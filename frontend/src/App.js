@@ -42,18 +42,25 @@ function App() {
     land: true,
     pandemics: true,
     technology: true,
-    // Sub-filters within the Technology layer. Absent/true = shown; explicit
-    // false = hidden. Keys match the `subtype` field in history_data.py.
-    techSubtypes: {
-      philosophy: true,
-      religion: true,
-      medicine: true,
-      'ancient-science': true,
-      'bronze-age-science': true,
-      'medieval-science': true,
-      'industrial-science': true,
-      'modern-science': true,
-      'future-science': true,
+    // Sub-filters, keyed by category then by the event's `subtype` field
+    // (history_data.py). Absent/true = shown; explicit false = hidden.
+    // Any category can carry a subtypesByCategory entry -- not just
+    // Technology -- so a new category's sub-filter needs no new state shape.
+    subtypesByCategory: {
+      technology: {
+        philosophy: true,
+        religion: true,
+        medicine: true,
+        'ancient-science': true,
+        'bronze-age-science': true,
+        'medieval-science': true,
+        'industrial-science': true,
+        'modern-science': true,
+        'future-science': true,
+      },
+      civilizations: {
+        languages: true,
+      },
     },
   });
 
@@ -105,7 +112,10 @@ function App() {
   const filterFn = useCallback(
     (e, y) => {
       if (e.year > y || !filters[e.category]) return false;
-      if (e.category === 'technology' && e.subtype && filters.techSubtypes?.[e.subtype] === false) return false;
+      // Generalized subtype gate: works for any category that tags events
+      // with a `subtype` and has a subtypesByCategory entry, not just
+      // Technology -- Civilizations' "languages" subtype uses the same path.
+      if (e.subtype && filters.subtypesByCategory?.[e.category]?.[e.subtype] === false) return false;
       return true;
     },
     [filters]
@@ -139,10 +149,16 @@ function App() {
 
   const handleJump = (targetYear) => setYear(targetYear);
   const toggleFilter = (key) => setFilters((f) => ({ ...f, [key]: !f[key] }));
-  const toggleTechSubtype = (subKey) => setFilters((f) => ({
-    ...f,
-    techSubtypes: { ...f.techSubtypes, [subKey]: !(f.techSubtypes?.[subKey] !== false) },
-  }));
+  const toggleSubtype = (category, subKey) => setFilters((f) => {
+    const current = f.subtypesByCategory?.[category] || {};
+    return {
+      ...f,
+      subtypesByCategory: {
+        ...f.subtypesByCategory,
+        [category]: { ...current, [subKey]: !(current[subKey] !== false) },
+      },
+    };
+  });
   const onReset = () => setYear(TIMELINE_START);
   const toggleCompare = () => setCompareOn((v) => !v);
 
@@ -247,7 +263,7 @@ function App() {
       />
       <SearchBox events={events} onPick={handleSearchPick} />
       <EraButtons onJump={handleJump} />
-      <CategoryFilter active={filters} onToggle={toggleFilter} onToggleSubtype={toggleTechSubtype} />
+      <CategoryFilter active={filters} onToggle={toggleFilter} onToggleSubtype={toggleSubtype} />
 
       {compareOn && (
         <CompareScrubber
